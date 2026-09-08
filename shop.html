@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shop — Beans, syrups &amp; baking supplies · Ember &amp; Crumb</title>
+<meta name="description" content="Coffee roasted in Zahra with a 3D origin globe and a brewing-method finder, plus the house syrups, creams, flour and tools our own bakers use.">
+<meta name="theme-color" content="#FDF7E4">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='19' fill='%234C2D1F'/%3E%3Cpath d='M20 9c5.5 2.4 8.5 6.4 8.5 11 0 4.9-3.8 8.9-8.5 8.9s-8.5-4-8.5-8.9C11.5 15.4 14.5 11.4 20 9z' fill='%23B8794B'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..700&family=Inter:wght@400;500;600;700&family=Amiri:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Great+Vibes&family=Playfair+Display:wght@500;600;700&family=Bebas+Neue&family=Caveat:wght@500;600;700&family=Cinzel:wght@500;600&family=Pacifico&family=Reem+Kufi:wght@500;600&family=Aref+Ruqaa:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=3475366610">
+</head>
+<body data-page="shop">
+<main>
+
+<section class="page-head">
+  <div class="wrap">
+    <span class="eyebrow" data-i18n="sh.eyebrow"></span>
+    <h1 class="h1" data-i18n="sh.title"></h1>
+    <p class="lede" data-i18n="sh.lede"></p>
+  </div>
+</section>
+
+<section class="section-tight" style="padding-top:0">
+  <div class="wrap">
+    <div class="section-head" style="margin-bottom:1.5rem">
+      <div><span class="eyebrow" data-i18n="bf.eyebrow"></span>
+        <h2 class="h2" style="margin-top:.9rem" data-i18n="bf.title"></h2>
+        <p class="lede" data-i18n="bf.lede"></p></div>
+    </div>
+    <div id="beanFinder"></div>
+    <div id="methodCard"></div>
+    <div style="margin:1.5rem 0 .75rem">
+      <span class="label" data-i18n="bf.mapTitle"></span>
+      <p class="small muted" style="max-width:70ch;margin-top:.35rem" data-i18n="bf.mapLede"></p>
+    </div>
+    <div class="globe-wrap" id="globeWrap">
+      <button class="btn btn-quiet globe-reset" id="globeReset" data-i18n="bf.reset"></button>
+      <span class="globe-hint" data-i18n="bf.spin"></span>
+    </div>
+  </div>
+</section>
+
+<div class="sticky-bar">
+  <div class="wrap row between row-wrap" style="gap:1rem">
+    <div class="filter-bar" id="shopFilters"></div>
+    <span class="small muted" id="shopCount"></span>
+  </div>
+</div>
+
+<section class="section-tight">
+  <div class="wrap">
+    <div id="beansSection">
+      <h2 class="h3" style="margin-bottom:1.25rem" data-i18n="sh.beansHead"></h2>
+      <div class="grid g4" id="beanGrid"></div>
+    </div>
+    <div id="syrupSection" style="margin-top:3.25rem">
+      <h2 class="h3" data-i18n="sh.syrupHead"></h2>
+      <p class="small muted" style="margin:.4rem 0 1.25rem;max-width:70ch" data-i18n="sh.syrupNote"></p>
+      <div class="grid g4" id="syrupGrid"></div>
+    </div>
+    <div id="suppliesSection" style="margin-top:3.25rem">
+      <h2 class="h3" style="margin-bottom:1.25rem" data-i18n="sh.suppliesHead"></h2>
+      <div class="grid g4" id="supplyGrid"></div>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight" style="padding-bottom:clamp(4rem,8vw,6rem)">
+  <div class="wrap">
+    <div class="grid g3">
+      <div class="step reveal"><h3 data-i18n="sh.p1t"></h3><p data-i18n="sh.p1b"></p></div>
+      <div class="step reveal"><h3 data-i18n="sh.p2t"></h3><p data-i18n="sh.p2b"></p></div>
+      <div class="step reveal"><h3 data-i18n="sh.p3t"></h3><p><span data-i18n="sh.p3b"></span>
+        <a href="visit.html#wholesale" class="btn-link" data-i18n="sh.talk"></a>.</p></div>
+    </div>
+  </div>
+</section>
+</main>
+<script src="js/i18n.js?v=3475366610"></script>
+<script src="js/data.js?v=3475366610"></script>
+<script src="js/store.js?v=3475366610"></script>
+<script src="js/ui.js?v=3475366610"></script>
+<script src="js/globe.js?v=3475366610"></script>
+<script src="js/reviews.js?v=3475366610"></script>
+<script src="js/studio.js?v=3475366610"></script>
+<script src="js/pages.js?v=3475366610"></script>
+</body>
+</html>
