@@ -922,6 +922,50 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   background:rgba(255,253,246,.86);border:1px solid var(--line);backdrop-filter:blur(6px)}
 
 
+
+/* ==========================================================================
+   Sign-in methods
+   ========================================================================== */
+.oauth-row{display:grid;gap:.55rem}
+.btn-oauth{
+  justify-content:center;gap:.65rem;width:100%;
+  border:1px solid var(--line-2);background:var(--paper);color:var(--ink);
+  font-weight:600;
+}
+.btn-oauth:hover{border-color:var(--espresso);background:var(--paper-2)}
+.btn-oauth svg{flex-shrink:0}
+/* Configured providers look normal; unconfigured ones stay visible but
+   visibly provisional, and say what is missing when tapped. */
+.btn-oauth.needs-setup{opacity:.6}
+.btn-oauth.needs-setup::after{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  margin-inline-start:.1rem;flex-shrink:0;
+}
+.auth-or{display:flex;align-items:center;gap:.8rem;margin:1.15rem 0 1rem}
+.auth-or::before,.auth-or::after{content:"";flex:1;height:1px;background:var(--line)}
+.auth-or span{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-40);font-weight:600}
+
+.method-row{display:flex;gap:.3rem;padding:.28rem;background:rgba(76,45,31,.055);border-radius:var(--r-pill)}
+.method{
+  flex:1;display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  padding:.62rem;border-radius:var(--r-pill);font-size:.85rem;font-weight:600;
+  color:var(--ink-55);transition:.2s;
+}
+.method.on{background:var(--paper);color:var(--ink);box-shadow:var(--shadow-sm)}
+.method svg{opacity:.7}
+.method.on svg{opacity:1}
+
+.input.otp{
+  text-align:center;letter-spacing:.55em;text-indent:.55em;
+  font-size:1.35rem;font-family:var(--serif);font-weight:600;padding-block:.7rem;
+}
+.backend-note{border-top:1px dashed var(--line);padding-top:.9rem}
+
+@media (pointer: coarse){
+  .method{padding:.75rem}
+  .btn-oauth{padding:.95em 1.4em}
+}
+
 /* ==========================================================================
    Ratings & reviews
    ========================================================================== */

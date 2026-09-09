@@ -77,7 +77,47 @@ const Reviews = (() => {
     ],
   };
 
+  /* ------------------------------------------------------------- cloud */
+  let cloudDb = {};                  // product_id -> normalised reviews
+  let hydrated = false;
+
+  const normCloud = r => ({
+    id: r.id, uid: null, own: false,
+    name: r.display_name || '', anon: !!r.anon,
+    stars: r.stars, text: r.body, bought: !!r.bought,
+    at: new Date(r.created_at).getTime(),
+    edited: !!r.updated_at,
+  });
+
+  /* Public rows come from the view (no user_id, so anonymity holds); our own
+     rows come from the base table purely so the site knows which card to
+     offer an Edit button on. */
+  async function hydrate() {
+    if (!Store.isCloud()) return false;
+    try {
+      const rows = await Backend.getReviews();
+      cloudDb = {};
+      rows.forEach(r => { (cloudDb[r.product_id] = cloudDb[r.product_id] || []).push(normCloud(r)); });
+      const u = Store.current();
+      if (u) {
+        const mine = await Backend.getMyReviews(u.id);
+        const ids = new Set(mine.map(m => m.id));
+        Object.values(cloudDb).forEach(list => list.forEach(r => { if (ids.has(r.id)) r.own = true; }));
+      }
+      hydrated = true;
+      emit('change');
+      return true;
+    } catch (e) { console.warn('[reviews] hydrate failed:', e.message); return false; }
+  }
+
+  const isMine = r => {
+    if (Store.isCloud()) return !!r.own;
+    const u = Store.current();
+    return !!(u && r.uid === u.id);
+  };
+
   function all() {
+    if (Store.isCloud()) return cloudDb;
     let db = read();
     if (!db) {                                     // first visit: lay down the seed
       db = {};
@@ -118,15 +158,28 @@ const Reviews = (() => {
 
   const mine = id => {
     const u = Store.current(); if (!u) return null;
-    return (all()[id] || []).find(r => r.uid === u.id) || null;
+    return (all()[id] || []).find(isMine) || null;
   };
 
-  function save(id, { stars, text, anon }) {
+  async function save(id, { stars, text, anon }) {
     const u = Store.current();
     if (!u) throw new Error(t('rv.needAccount'));
     stars = Math.max(0, Math.min(5, Math.round(+stars)));
     text = String(text || '').trim().slice(0, 600);
     if (!text) throw new Error(t('rv.needText'));
+
+    if (Store.isCloud()) {
+      const row = await Backend.upsertReview(u.id, {
+        product_id: id, display_name: shortName(u.name),
+        anon: !!anon, stars, body: text,
+      });
+      const list = (cloudDb[id] = cloudDb[id] || []);
+      const norm = { ...normCloud({ ...row, created_at: row.created_at, display_name: row.display_name }), own: true };
+      const at = list.findIndex(r => r.own);
+      if (at >= 0) list[at] = norm; else list.unshift(norm);
+      emit('change');
+      return true;
+    }
 
     const db = all();
     const list = db[id] || (db[id] = []);
@@ -142,12 +195,18 @@ const Reviews = (() => {
 
   function remove(id, reviewId) {
     const u = Store.current(); if (!u) return;
+    if (Store.isCloud()) {
+      cloudDb[id] = (cloudDb[id] || []).filter(r => r.id !== reviewId);
+      emit('change');
+      Backend.deleteReview(reviewId).catch(e => console.warn(e.message));
+      return;
+    }
     const db = all();
     db[id] = (db[id] || []).filter(r => !(r.id === reviewId && r.uid === u.id));
     write(db); emit('change');
   }
 
-  return { all, canReview, forProduct, summary, shortName, mine, save, remove, on, CATS };
+  return { all, canReview, forProduct, summary, shortName, mine, save, remove, on, CATS, hydrate, isMine };
 })();
 
 /* ==========================================================================
@@ -183,8 +242,7 @@ function starInputHTML(value) {
 let rvProduct = null, rvSort = 'new', rvDraft = { stars: 5, anon: false, text: '' };
 
 function reviewCardHTML(r) {
-  const u = Store.current();
-  const own = u && r.uid === u.id;
+  const own = Reviews.isMine(r);
   const who = r.anon ? t('rv.anon') : (r.name || t('rv.anon'));
   return `<article class="rv-item${own ? ' own' : ''}">
     <div class="rv-head">
@@ -345,14 +403,19 @@ function buildReviewModal() {
   m.addEventListener('change', e => {
     if (e.target.id === 'rvSort') { rvSort = e.target.value; paintReviews(); }
   });
-  m.addEventListener('submit', e => {
+  m.addEventListener('submit', async e => {
     e.preventDefault();
-    const err = $('#rvErr');
+    const err = $('#rvErr'), btn = e.target.querySelector('button[type=submit]');
+    err.classList.remove('show');
+    if (btn) { btn.disabled = true; btn.textContent = t('auth.working'); }
     try {
-      Reviews.save(rvProduct.id, rvDraft);
+      await Reviews.save(rvProduct.id, rvDraft);
       rvDraft = { stars: 5, anon: false, text: '' };
       toast(t('rv.thanks'), I.check);
-    } catch (ex) { err.textContent = ex.message; err.classList.add('show'); }
+    } catch (ex) {
+      err.textContent = ex.message; err.classList.add('show');
+      if (btn) { btn.disabled = false; paintReviews(); }
+    }
   });
 
   Reviews.on('change', () => { if (rvProduct) paintReviews(); });

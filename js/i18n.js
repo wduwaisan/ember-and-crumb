@@ -84,7 +84,41 @@ const I18N = (() => {
     'err.creds':          ['That email and password combination is not recognised.', 'البريد الإلكتروني وكلمة المرور غير متطابقين.'],
     'err.emptyBag':       ['Your bag is empty.', 'حقيبتك فارغة.'],
 
-    /* ---- footer ---- */
+    /* ---- sign-in methods ---- */
+  'auth.orWith':       ['or continue with', 'أو تابع عبر'],
+  'auth.google':       ['Continue with Google', 'المتابعة بحساب Google'],
+  'auth.facebook':     ['Continue with Facebook', 'المتابعة بحساب Facebook'],
+  'auth.mEmail':       ['Email', 'البريد'],
+  'auth.mPhone':       ['Phone', 'الهاتف'],
+  'auth.phone':        ['Phone number', 'رقم الهاتف'],
+  'auth.phoneHint':    ['We will text you a six-digit code.', 'سنرسل لك رمزاً من ست خانات.'],
+  'auth.sendCode':     ['Send me a code', 'أرسل لي رمزاً'],
+  'auth.codeSentTo':   ['Code sent to {phone}', 'أُرسل الرمز إلى {phone}'],
+  'auth.enterCode':    ['Six-digit code', 'الرمز المكوّن من ست خانات'],
+  'auth.verify':       ['Verify and continue', 'تحقّق وتابع'],
+  'auth.resend':       ['Send another code', 'أرسل رمزاً آخر'],
+  'auth.otherNumber':  ['Use a different number', 'استخدم رقماً آخر'],
+  'auth.redirecting':  ['Taking you to {provider}…', 'جارٍ تحويلك إلى {provider}…'],
+  'auth.confirmSent':  ['Almost there — open the link we emailed to {email} to finish signing up.',
+                        'اقتربنا — افتح الرابط الذي أرسلناه إلى {email} لإكمال التسجيل.'],
+
+  /* ---- backend states ---- */
+  'sb.demo':           ['Demo mode — accounts live only in this browser.', 'وضع تجريبي — الحسابات محفوظة في هذا المتصفح فقط.'],
+  'sb.live':           ['Your account works on any device.', 'حسابك يعمل على أي جهاز.'],
+  'sb.offline':        ['We cannot reach the server right now. Please try again in a moment.',
+                        'تعذّر الوصول إلى الخادم الآن. حاول بعد قليل.'],
+  'sb.needsBackend':   ['This sign-in method needs the server, which is not connected yet.',
+                        'طريقة الدخول هذه تحتاج الخادم، وهو غير متصل بعد.'],
+  'sb.notConfigured':  ['{provider} sign-in is not switched on yet. It needs to be enabled in the Supabase dashboard first.',
+                        'الدخول عبر {provider} غير مفعّل بعد. يجب تفعيله من لوحة تحكم Supabase أولاً.'],
+  'sb.providerOff':    ['That sign-in method is not enabled on this site yet.', 'طريقة الدخول هذه غير مفعّلة في الموقع بعد.'],
+  'sb.smsOff':         ['Text-message sign-in is not set up yet. Try email instead.', 'الدخول عبر الرسائل النصية غير مُعد بعد. جرّب البريد.'],
+  'sb.confirmFirst':   ['Open the confirmation link we emailed you, then log in.', 'افتح رابط التأكيد المرسل إلى بريدك ثم سجّل الدخول.'],
+  'sb.badCode':        ['That code is wrong or has expired. Try sending a new one.', 'الرمز غير صحيح أو منتهي. اطلب رمزاً جديداً.'],
+  'sb.rateLimit':      ['Too many attempts. Please wait a minute and try again.', 'محاولات كثيرة. انتظر دقيقة ثم أعد المحاولة.'],
+  'sb.generic':        ['Something went wrong. Please try again.', 'حدث خطأ ما. حاول مرة أخرى.'],
+
+  /* ---- footer ---- */
     'f.blurb':            ['We roast in the back, bake before dawn, and let you design the rest. Two counters, one very small building.',
                            'نحمّص في الخلف، ونخبز قبل الفجر، ونترك لك تصميم الباقي. كاونتران في مبنى صغير جداً.'],
     'f.order':            ['Order', 'اطلب'],

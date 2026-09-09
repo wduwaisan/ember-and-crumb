@@ -38,6 +38,10 @@ const I = {
   heart:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 5.6a5.5 5.5 0 0 0-7.8 0L12 6.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 22l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>',
   trash:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
   globe:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9.2"/><path d="M3 12h18M12 2.8c2.6 2.6 2.6 15.8 0 18.4M12 2.8c-2.6 2.6-2.6 15.8 0 18.4"/></svg>',
+  google:'<svg width="17" height="17" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45.1 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2 5.1-4.4 6.700v5.5h7.1c4.2-3.8 6.6-9.5 6.6-16.2z"/><path fill="#34A853" d="M24 46c6 0 11-2 14.6-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.5 2.1-5.8 0-10.7-3.9-12.4-9.1H4.3v5.7C7.9 41.1 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.6 28.2c-.4-1.3-.7-2.7-.7-4.2s.3-2.9.7-4.2v-5.7H4.3C2.8 17.1 2 20.4 2 24s.8 6.9 2.3 9.9l7.3-5.7z"/><path fill="#EA4335" d="M24 10.7c3.3 0 6.2 1.1 8.5 3.3l6.3-6.3C34.9 4.1 30 2 24 2 15.4 2 7.9 6.9 4.3 14.1l7.3 5.7c1.7-5.2 6.6-9.1 12.4-9.1z"/></svg>',
+  facebook:'<svg width="17" height="17" viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12.07C24 5.4 18.63 0 12 0S0 5.4 0 12.07C0 18.1 4.39 23.1 10.13 24v-8.44H7.08v-3.49h3.05V9.41c0-3.02 1.79-4.69 4.53-4.69 1.31 0 2.68.24 2.68.24v2.96h-1.51c-1.49 0-1.96.93-1.96 1.89v2.26h3.33l-.53 3.49h-2.8V24C19.61 23.1 24 18.1 24 12.07z"/></svg>',
+  phone:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg>',
+  mail:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="4.5" width="19" height="15" rx="2.5"/><path d="m3 7 9 6.5L21 7"/></svg>',
   leaf:'<svg width="30" height="30" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18.5" fill="#4C2D1F"/><path d="M20 9c5.5 2.4 8.5 6.4 8.5 11 0 4.9-3.8 8.9-8.5 8.9s-8.5-4-8.5-8.9C11.5 15.4 14.5 11.4 20 9z" fill="#B8794B"/><path d="M20 11.5v16.4" stroke="#4C2D1F" stroke-width="1.5" stroke-linecap="round"/><path d="M20 17.5l3.6-3.2M20 22l-3.6-3.2" stroke="#4C2D1F" stroke-width="1.4" stroke-linecap="round"/></svg>',
 };
 
@@ -336,92 +340,187 @@ function renderCart() {
     if (b.dataset.dec) Store.setQty(b.dataset.dec, (ls.find(l => l.key === b.dataset.dec)?.qty || 0) - 1);
     if (b.dataset.del) Store.removeFromCart(b.dataset.del);
   };
-  $('#checkout').onclick = () => {
+  $('#checkout').onclick = async () => {
     if (!Store.current()) { closeCart(); openAuth('login', t('cart.loginFirst')); return; }
+    const btn = $('#checkout'); btn.disabled = true;
     try {
-      const o = Store.placeOrder({ fulfilment: $('#fulfil').value });
+      const o = await Store.placeOrder({ fulfilment: $('#fulfil').value });
       closeCart();
       toast(t('cart.placed', { id: o.id }), I.check);
       setTimeout(() => location.href = 'account.html#orders', 900);
-    } catch (err) { toast(err.message); }
+    } catch (err) { toast(err.message); btn.disabled = false; }
   };
 }
 
 /* ==========================================================================
    Auth modal
    ========================================================================== */
-let authMode = 'login';
+let authMode = 'login';       // login | signup
+let authVia  = 'email';       // email | phone
+let otpPhone = null;          // set once a code has been sent
+
+const providerOn = p => !!(EC_CONFIG.providers && EC_CONFIG.providers[p]);
 
 function authInnerHTML() {
-  return `<button class="icon-btn modal-close" id="authClose" aria-label="${esc(t('c.close'))}">${I.x}</button>
-  <div class="modal-inner">
-    <div class="eyebrow no-rule">Ember &amp; Crumb</div>
-    <h2 class="h2" style="font-size:1.75rem;margin:.5rem 0 .4rem" id="authTitle">${t('auth.welcome')}</h2>
-    <p class="small muted" id="authSub" style="margin-bottom:1.4rem">${t('auth.sub')}</p>
-    <div class="auth-switch">
-      <button data-mode="login" class="active">${t('auth.login')}</button>
-      <button data-mode="signup">${t('auth.signup')}</button>
+  const signup = authMode === 'signup';
+  const phone  = authVia === 'phone';
+
+  const social = `
+    <div class="oauth-row">
+      <button type="button" class="btn btn-oauth${providerOn('google') ? '' : ' needs-setup'}" data-oauth="google">
+        ${I.google}<span>${t('auth.google')}</span></button>
+      <button type="button" class="btn btn-oauth${providerOn('facebook') ? '' : ' needs-setup'}" data-oauth="facebook">
+        ${I.facebook}<span>${t('auth.facebook')}</span></button>
     </div>
-    <form id="authForm" class="stack" novalidate>
-      <div class="field" id="nameField" hidden>
-        <label for="au-name">${t('auth.name')}</label>
-        <input class="input" id="au-name" autocomplete="name">
+    <div class="auth-or"><span>${t('auth.orWith')}</span></div>
+    <div class="method-row">
+      <button type="button" class="method${phone ? '' : ' on'}" data-via="email">${I.mail}${t('auth.mEmail')}</button>
+      <button type="button" class="method${phone ? ' on' : ''}" data-via="phone">${I.phone}${t('auth.mPhone')}</button>
+    </div>`;
+
+  /* Phone: two steps — ask for the number, then for the code it texts back. */
+  const phoneFields = otpPhone ? `
+      <p class="small muted" style="margin-bottom:.25rem">${t('auth.codeSentTo', { phone: `<bdi>${esc(otpPhone)}</bdi>` })}</p>
+      <div class="field">
+        <label for="au-code">${t('auth.enterCode')}</label>
+        <input class="input otp" id="au-code" inputmode="numeric" autocomplete="one-time-code"
+               maxlength="6" placeholder="······">
       </div>
+      <div class="row" style="gap:.5rem">
+        <button type="button" class="btn btn-quiet" data-otp="resend">${t('auth.resend')}</button>
+        <button type="button" class="btn btn-quiet" data-otp="change">${t('auth.otherNumber')}</button>
+      </div>` : `
+      ${signup ? nameField() : ''}
+      <div class="field">
+        <label for="au-phone">${t('auth.phone')}</label>
+        <input class="input" id="au-phone" type="tel" inputmode="tel" autocomplete="tel" dir="ltr"
+               value="${esc(EC_CONFIG.defaultDialCode || '')}" placeholder="+965 5000 0000">
+        <p class="small muted" style="margin-top:.4rem">${t('auth.phoneHint')}</p>
+      </div>`;
+
+  const emailFields = `
+      ${signup ? nameField() : ''}
       <div class="field">
         <label for="au-email">${t('auth.email')}</label>
-        <input class="input" id="au-email" type="email" autocomplete="email" placeholder="you@example.com">
+        <input class="input" id="au-email" type="email" autocomplete="email" dir="ltr" placeholder="you@example.com">
       </div>
       <div class="field">
         <label for="au-pw">${t('auth.password')}</label>
-        <input class="input" id="au-pw" type="password" autocomplete="current-password" placeholder="${esc(t('auth.pwHint'))}">
-        <div class="pw-meter" id="pwMeter" hidden><i></i></div>
-      </div>
+        <input class="input" id="au-pw" type="password" autocomplete="${signup ? 'new-password' : 'current-password'}"
+               placeholder="${esc(t('auth.pwHint'))}">
+        <div class="pw-meter" id="pwMeter" ${signup ? '' : 'hidden'}><i></i></div>
+      </div>`;
+
+  const submitLabel = phone
+    ? (otpPhone ? t('auth.verify') : t('auth.sendCode'))
+    : (signup ? t('auth.createBtn') : t('auth.login'));
+
+  return `<button class="icon-btn modal-close" id="authClose" aria-label="${esc(t('c.close'))}">${I.x}</button>
+  <div class="modal-inner">
+    <div class="eyebrow no-rule">Ember &amp; Crumb</div>
+    <h2 class="h2" style="font-size:1.75rem;margin:.5rem 0 .4rem" id="authTitle">${signup ? t('auth.create') : t('auth.welcome')}</h2>
+    <p class="small muted" id="authSub" style="margin-bottom:1.3rem">${t('auth.sub')}</p>
+
+    <div class="auth-switch">
+      <button data-mode="login"  class="${signup ? '' : 'active'}">${t('auth.login')}</button>
+      <button data-mode="signup" class="${signup ? 'active' : ''}">${t('auth.signup')}</button>
+    </div>
+
+    ${social}
+
+    <form id="authForm" class="stack" novalidate style="margin-top:1.1rem">
+      ${phone ? phoneFields : emailFields}
       <div class="err" id="authErr"></div>
-      <button class="btn btn-primary btn-block btn-lg" type="submit" id="authSubmit">${t('auth.login')}</button>
+      <button class="btn btn-primary btn-block btn-lg" type="submit" id="authSubmit">${submitLabel}</button>
     </form>
-    <p class="small muted center" style="margin-top:1.1rem;line-height:1.55">${t('auth.demoNote')}</p>
+
+    <p class="small muted center backend-note" style="margin-top:1.1rem;line-height:1.55">
+      ${Store.isCloud() ? t('sb.live') : t('auth.demoNote')}
+    </p>
   </div>`;
 }
 
-function setAuthMode(next) {
-  authMode = next;
-  $$('#authModal .auth-switch button').forEach(b => b.classList.toggle('active', b.dataset.mode === authMode));
-  $('#nameField').hidden = authMode === 'login';
-  $('#pwMeter').hidden = authMode === 'login';
-  $('#authTitle').textContent = authMode === 'login' ? t('auth.welcome') : t('auth.create');
-  $('#authSubmit').textContent = authMode === 'login' ? t('auth.login') : t('auth.createBtn');
-  $('#au-pw').autocomplete = authMode === 'login' ? 'current-password' : 'new-password';
-  $('#authErr').classList.remove('show');
+const nameField = () => `
+      <div class="field">
+        <label for="au-name">${t('auth.name')}</label>
+        <input class="input" id="au-name" autocomplete="name">
+      </div>`;
+
+function repaintAuth() {
+  const m = $('#authModal');
+  m.innerHTML = authInnerHTML();
+  wireAuth();
 }
+
+function setAuthMode(next) { authMode = next; otpPhone = null; repaintAuth(); }
+function setAuthVia(next)  { authVia = next;  otpPhone = null; repaintAuth(); }
 
 function wireAuth() {
   const m = $('#authModal');
-  $$('.auth-switch button', m).forEach(b => b.onclick = () => setAuthMode(b.dataset.mode));
   $('#authClose').onclick = closeAll;
-  $('#au-pw').oninput = e => {
+  $$('.auth-switch button', m).forEach(b => b.onclick = () => setAuthMode(b.dataset.mode));
+  $$('.method', m).forEach(b => b.onclick = () => setAuthVia(b.dataset.via));
+
+  const err = $('#authErr');
+  const fail = msg => { err.textContent = msg; err.classList.add('show'); };
+
+  $$('[data-oauth]', m).forEach(b => b.onclick = async () => {
+    const p = b.dataset.oauth;
+    if (!Store.isCloud()) return fail(t('sb.needsBackend'));
+    if (!providerOn(p))   return fail(t('sb.notConfigured', { provider: p === 'google' ? 'Google' : 'Facebook' }));
+    try { toast(t('auth.redirecting', { provider: p === 'google' ? 'Google' : 'Facebook' })); await Store.oauth(p); }
+    catch (ex) { fail(ex.message); }
+  });
+
+  $$('[data-otp]', m).forEach(b => b.onclick = () => {
+    if (b.dataset.otp === 'change') { otpPhone = null; return repaintAuth(); }
+    const num = otpPhone; otpPhone = null; repaintAuth();
+    Store.sendPhoneCode(num).then(() => { otpPhone = num; repaintAuth(); toast(t('auth.codeSentTo', { phone: num })); })
+      .catch(ex => fail(ex.message));
+  });
+
+  const pw = $('#au-pw');
+  if (pw) pw.oninput = e => {
     const v = e.target.value;
     const score = Math.min(4, (v.length >= 8) + (v.length >= 12) + /[A-Z]/.test(v) + /[^a-zA-Z]/.test(v));
-    const bar = $('#pwMeter i');
+    const bar = $('#pwMeter i'); if (!bar) return;
     bar.style.width = (score / 4 * 100) + '%';
     bar.style.background = ['#B8794B','#B8794B','#C9A25E','#8A8C63','#8A8C63'][score];
   };
+
   $('#authForm').onsubmit = async e => {
     e.preventDefault();
-    const err = $('#authErr'), btn = $('#authSubmit');
     err.classList.remove('show');
-    btn.disabled = true; btn.textContent = t('auth.working');
+    const btn = $('#authSubmit');
+    btn.disabled = true; const label = btn.textContent; btn.textContent = t('auth.working');
     try {
-      const payload = { name: $('#au-name').value, email: $('#au-email').value, password: $('#au-pw').value };
+      if (authVia === 'phone') {
+        if (!Store.isCloud()) throw new Error(t('sb.needsBackend'));
+        if (!providerOn('phone')) throw new Error(t('sb.notConfigured', { provider: t('auth.mPhone') }));
+        if (!otpPhone) {
+          const num = $('#au-phone').value.replace(/[^\d+]/g, '');
+          await Store.sendPhoneCode(num, $('#au-name')?.value.trim());
+          otpPhone = num; repaintAuth();
+          toast(t('auth.codeSentTo', { phone: num }));
+          return;
+        }
+        const u = await Store.verifyPhoneCode(otpPhone, $('#au-code').value.trim());
+        closeAll(); otpPhone = null;
+        toast(t('auth.hiBack', { name: (u?.name || '').split(' ')[0] }), I.check);
+        return;
+      }
+
+      const payload = { name: $('#au-name')?.value, email: $('#au-email').value, password: $('#au-pw').value };
       const u = authMode === 'login' ? await Store.login(payload) : await Store.signup(payload);
-      closeAll(); $('#authForm').reset();
-      toast(t(authMode === 'login' ? 'auth.hiBack' : 'auth.hiNew', { name: u.name.split(' ')[0] }), I.check);
+      if (u && u.pending) { closeAll(); toast(t('auth.confirmSent', { email: u.email })); return; }
+      closeAll();
+      toast(t(authMode === 'login' ? 'auth.hiBack' : 'auth.hiNew', { name: (u?.name || '').split(' ')[0] }), I.check);
     } catch (ex) {
-      err.textContent = ex.message; err.classList.add('show');
+      fail(ex.message);
     } finally {
-      btn.disabled = false; setAuthMode(authMode);
+      const b = $('#authSubmit'); if (b) { b.disabled = false; b.textContent = label; }
     }
   };
-  setAuthMode(authMode);
 }
 
 function buildAuth() {
@@ -434,18 +533,19 @@ function buildAuth() {
 }
 
 function openAuth(mode = 'login', sub) {
-  setAuthMode(mode);
+  authMode = mode; authVia = 'email'; otpPhone = null;
+  repaintAuth();
   if (sub) $('#authSub').textContent = sub;
   $('#scrim').classList.add('open'); $('#authModal').classList.add('open');
   document.body.classList.add('no-scroll');
-  setTimeout(() => $(mode === 'signup' ? '#au-name' : '#au-email').focus(), 340);
+  setTimeout(() => $(mode === 'signup' ? '#au-name' : '#au-email')?.focus(), 340);
 }
 
 
 /* ==========================================================================
    Cursor glow — a warm light that follows the pointer, on fine pointers only
    ========================================================================== */
-const HOT = 'a,button,input,select,textarea,summary,[role="button"],.opt,.preset,.chip,.font-card,.ink,.card,.menu-item,.pin,.globe-canvas';
+const HOT = 'a,button,input,select,textarea,summary,[role="button"],.opt,.preset,.chip,.font-card,.ink,.card,.menu-item,.pin,.globe-canvas,.method,.star-btn';
 
 function initCursorGlow() {
   if (!matchMedia('(pointer: fine)').matches) return;
@@ -455,12 +555,12 @@ function initCursorGlow() {
   const dot  = document.createElement('div'); dot.className  = 'cursor-dot';
   document.body.append(glow, dot);
 
-  let tx = innerWidth / 2, ty = innerHeight / 2;   // pointer
-  let gx = tx, gy = ty;                            // glow, trailing
+  let tx = innerWidth / 2, ty = innerHeight / 2;
+  let gx = tx, gy = ty;
   let on = false, raf = 0;
 
   const tick = () => {
-    gx += (tx - gx) * 0.16;                        // the halo lags a little
+    gx += (tx - gx) * 0.16;
     gy += (ty - gy) * 0.16;
     glow.style.transform = `translate3d(${gx}px,${gy}px,0) translate(-50%,-50%)`;
     dot.style.transform  = `translate3d(${tx}px,${ty}px,0) translate(-50%,-50%)`;
@@ -488,8 +588,6 @@ function initCursorGlow() {
    Screen transitions — every page arrives, and leaves, deliberately
    ========================================================================== */
 const REDUCED = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/* Elements worth staging on arrival, in the order they should appear. */
 const ENTER_SEL = '.eyebrow, h1, .lede, .hero-cta, .hero-stats, .hero-art, .studio-tabs, .filter-bar';
 
 function runScreenIn() {
@@ -527,12 +625,11 @@ function initScreenOut() {
     if (a.target || a.hasAttribute('download') || !/\.html(\?|#|$)/.test(href)) return;
     const url = new URL(a.href, location.href);
     if (url.origin !== location.origin) return;
-    if (url.pathname === location.pathname && url.hash) return;   // same page anchor
+    if (url.pathname === location.pathname && url.hash) return;
     e.preventDefault();
     document.body.classList.add('leaving');
     setTimeout(() => { location.href = a.href; }, 260);
   });
-  /* Coming back via the back button must not leave the page faded out. */
   addEventListener('pageshow', () => document.body.classList.remove('leaving'));
 }
 
@@ -559,9 +656,15 @@ function initShell() {
   I18N.onChange(() => {
     $('#siteHeader').innerHTML = headerHTML(); wireHeader();
     $('#siteFooter').innerHTML = footerHTML(); wireFooter();
-    $('#authModal').innerHTML = authInnerHTML(); wireAuth();
+    repaintAuth();
     renderCart();
     const intro = $('#intro'); if (intro) I18N.paintStatic(intro);
   });
 }
-document.addEventListener('DOMContentLoaded', initShell);
+document.addEventListener('DOMContentLoaded', async () => {
+  initShell();
+  /* Connect to Supabase if configured. Everything above already works
+     without it, so a slow or failed connection degrades rather than blocks. */
+  const online = await Store.boot();
+  if (online && typeof Reviews !== 'undefined') Reviews.hydrate();
+});
