@@ -22,6 +22,7 @@ HEAD = """<!DOCTYPE html>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="FONTS" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
+<script type="importmap">{{"imports":{{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js"}}}}</script>
 </head>
 <body data-page="{page}">
 <main>
@@ -39,6 +40,7 @@ FOOT = """</main>
 <script src="js/reviews.js"></script>
 <script src="js/studio.js"></script>
 <script src="js/pages.js"></script>
+<script type="module" src="js/scene3d.js"></script>
 </body>
 </html>
 """
@@ -269,7 +271,10 @@ page("studio.html",
   <div class="wrap studio">
     <div class="studio-stage">
       <div class="stage-card">
-        <div class="stage-viz" id="stageViz"></div>
+        <div class="stage-viz" id="stageViz">
+          <div class="stage-flat" id="stageFlat"></div>
+          <div class="stage-3d" id="stage3d"></div>
+        </div>
         <div class="eyebrow no-rule" data-i18n="st.yours"></div>
         <h2 class="stage-name" id="stageName" style="margin-top:.4rem"></h2>
         <p class="stage-recipe" id="stageRecipe"></p>

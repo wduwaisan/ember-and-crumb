@@ -400,6 +400,11 @@ body::before{
   background:radial-gradient(ellipse,rgba(224,122,74,.13),transparent 66%);pointer-events:none;
 }
 .stage-viz{height:clamp(215px,30vh,340px);display:grid;place-items:end center;position:relative;margin-bottom:1.25rem}
+.stage-flat{position:absolute;inset:0;display:grid;place-items:end center}
+.stage-3d{position:absolute;inset:0;display:none}
+.stage-viz.viz-3d .stage-flat{display:none}
+.stage-viz.viz-3d .stage-3d{display:block}
+.scene3d{display:block;width:100%;height:100%}
 .stage-shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:62%;height:18px;border-radius:50%;background:radial-gradient(ellipse,rgba(36,24,18,.24),transparent 70%)}
 
 .stage-name{font-family:var(--serif);font-size:1.5rem;font-weight:600;letter-spacing:-.02em;line-height:1.15;text-wrap:balance}
