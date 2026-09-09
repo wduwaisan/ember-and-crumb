@@ -25,8 +25,10 @@ const Scene3D = (() => {
       renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.18;
+      /* ACES greys out warm browns badly — coffee came out murky under it.
+         Neutral keeps the amber. */
+      renderer.toneMapping = THREE.NeutralToneMapping ?? THREE.LinearToneMapping;
+      renderer.toneMappingExposure = 1.25;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       envMap = buildEnvironment();
       available = true;
@@ -41,21 +43,34 @@ const Scene3D = (() => {
      Cheaper than loading an HDR and it matches the site's palette. */
   function buildEnvironment() {
     const c = document.createElement('canvas');
-    c.width = 512; c.height = 256;
+    c.width = 1024; c.height = 512;
     const g = c.getContext('2d');
-    const sky = g.createLinearGradient(0, 0, 0, 256);
+    /* High-key studio: bright ceiling, clean walls, a soft floor bounce.
+       Murkiness in the last pass came from a dark lower half dragging the
+       whole reflection down. */
+    const sky = g.createLinearGradient(0, 0, 0, 512);
     sky.addColorStop(0.00, '#ffffff');
-    sky.addColorStop(0.35, '#fdf7e4');
-    sky.addColorStop(0.55, '#e7d8bd');
-    sky.addColorStop(1.00, '#7d6448');
-    g.fillStyle = sky; g.fillRect(0, 0, 512, 256);
-    /* a soft key light and a warm bounce, so glass has something to reflect */
-    const key = g.createRadialGradient(150, 40, 4, 150, 40, 120);
-    key.addColorStop(0, 'rgba(255,255,255,1)'); key.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = key; g.fillRect(0, 0, 512, 256);
-    const warm = g.createRadialGradient(400, 150, 4, 400, 150, 150);
-    warm.addColorStop(0, 'rgba(224,168,110,.75)'); warm.addColorStop(1, 'rgba(224,168,110,0)');
-    g.fillStyle = warm; g.fillRect(0, 0, 512, 256);
+    sky.addColorStop(0.30, '#fffdf6');
+    sky.addColorStop(0.52, '#f6ecd6');
+    sky.addColorStop(0.74, '#e8d6b8');
+    sky.addColorStop(1.00, '#c9b48f');
+    g.fillStyle = sky; g.fillRect(0, 0, 1024, 512);
+
+    /* A big soft box light overhead — this is what draws the long vertical
+       highlight down the side of a glass. */
+    const box = g.createLinearGradient(0, 0, 0, 190);
+    box.addColorStop(0, 'rgba(255,255,255,1)');
+    box.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = box; g.fillRect(120, 0, 300, 190);
+    g.fillStyle = box; g.fillRect(640, 0, 220, 150);
+
+    /* warm bounce from the right, cool fill from the left */
+    const warm = g.createRadialGradient(800, 300, 4, 800, 300, 260);
+    warm.addColorStop(0, 'rgba(255,214,158,.85)'); warm.addColorStop(1, 'rgba(255,214,158,0)');
+    g.fillStyle = warm; g.fillRect(0, 0, 1024, 512);
+    const cool = g.createRadialGradient(180, 280, 4, 180, 280, 240);
+    cool.addColorStop(0, 'rgba(235,245,255,.7)'); cool.addColorStop(1, 'rgba(235,245,255,0)');
+    g.fillStyle = cool; g.fillRect(0, 0, 1024, 512);
 
     const tex = new THREE.CanvasTexture(c);
     tex.mapping = THREE.EquirectangularReflectionMapping;
@@ -66,29 +81,59 @@ const Scene3D = (() => {
     return env;
   }
 
-  /* ------------------------------------------------------------ materials */
+  /* ------------------------------------------------------------ materials
+     Only ONE transmissive layer can be seen through at a time: three.js
+     renders transmissive materials against a buffer that contains just the
+     opaque objects. So the wall is plain alpha, the coffee is transmissive,
+     and the ice is opaque — which is exactly the order that lets you see
+     ice through coffee through the cup. */
+
+  /* Thin clear plastic: no transmission, just a faint tint plus strong
+     specular and clearcoat so it catches the softbox as a highlight. */
   const glass = () => new THREE.MeshPhysicalMaterial({
-    color: 0xffffff, transmission: 1, thickness: 0.04, roughness: 0.015,
-    ior: 1.46, clearcoat: 1, clearcoatRoughness: 0.02,
-    attenuationDistance: 40,
-    specularIntensity: 1, envMap, envMapIntensity: 1.35,
-    transparent: true, side: THREE.DoubleSide, depthWrite: false,
+    color: 0xffffff, transparent: true, opacity: 0.11,
+    roughness: 0.03, metalness: 0,
+    clearcoat: 1, clearcoatRoughness: 0.02,
+    specularIntensity: 1, reflectivity: 0.6,
+    envMap, envMapIntensity: 2.2,
+    side: THREE.DoubleSide, depthWrite: false,
   });
-  const liquid = hex => new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(hex), roughness: 0.18, metalness: 0,
-    clearcoat: 0.85, clearcoatRoughness: 0.16,
-    envMap, envMapIntensity: 0.95, side: THREE.DoubleSide,
+
+  /* The drink. Transmissive with attenuation, so it is deep and dark where
+     the column is thick and glows amber where it thins at the edges. */
+  const liquid = hex => {
+    const base = new THREE.Color(hex);
+    /* Very dark drinks (cold brew is nearly black) go to mud once attenuation
+       stacks on top, so lift the surface tint and warm it before it is used. */
+    const hsl = { h: 0, s: 0, l: 0 };
+    base.getHSL(hsl);
+    const tint = new THREE.Color().setHSL(hsl.h, Math.min(1, hsl.s * 1.15 + 0.05), Math.max(hsl.l, 0.22));
+    return new THREE.MeshPhysicalMaterial({
+      color: tint, transmission: 0.94, thickness: 0.85,
+      attenuationColor: base, attenuationDistance: 2.6,
+      roughness: 0.05, metalness: 0, ior: 1.34,
+      clearcoat: 0.55, clearcoatRoughness: 0.08,
+      envMap, envMapIntensity: 1.2, transparent: true, side: THREE.DoubleSide,
+    });
+  };
+
+  /* Ice is deliberately OPAQUE. Transmissive ice would vanish behind the
+     transmissive coffee; a pale, glossy, slightly frosted solid reads far
+     more like real ice through a drink. */
+  const iceMat = () => new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, roughness: 0.13, metalness: 0,
+    clearcoat: 1, clearcoatRoughness: 0.05,
+    sheen: 0.6, sheenColor: new THREE.Color(0xffffff),
+    emissive: new THREE.Color(0xdfeaf5), emissiveIntensity: 0.18,
+    envMap, envMapIntensity: 0.9,
   });
+
   const cream = hex => new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(hex), roughness: 0.82, sheen: 0.6,
-    sheenColor: new THREE.Color(0xffffff), envMap, envMapIntensity: 0.4,
+    color: new THREE.Color(hex), roughness: 0.7, sheen: 0.8,
+    sheenColor: new THREE.Color(0xffffff), envMap, envMapIntensity: 0.75,
   });
   const matte = hex => new THREE.MeshStandardMaterial({
-    color: new THREE.Color(hex), roughness: 0.85, metalness: 0, envMap, envMapIntensity: 0.35,
-  });
-  const iceMat = () => new THREE.MeshPhysicalMaterial({
-    color: 0xeaf4ff, transmission: 0.92, thickness: 0.3, roughness: 0.18,
-    ior: 1.31, envMap, envMapIntensity: 1.1, transparent: true,
+    color: new THREE.Color(hex), roughness: 0.8, metalness: 0, envMap, envMapIntensity: 0.55,
   });
 
   /* --------------------------------------------------------------- helpers */
@@ -104,19 +149,28 @@ const Scene3D = (() => {
     camera.position.set(1.15, height + 1.5, dist);
     camera.lookAt(0, height * 0.92, 0);
 
-    scene.add(new THREE.HemisphereLight(0xfff6e6, 0x9c7f5f, 0.85));
-    const key = new THREE.DirectionalLight(0xfff3e0, 2.1);
-    key.position.set(2.6, 5.2, 3.4);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xc4a980, 1.15));
+
+    const key = new THREE.DirectionalLight(0xfff8ec, 2.6);
+    key.position.set(2.4, 6.0, 3.8);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
-    key.shadow.camera.near = 0.5; key.shadow.camera.far = 18;
-    key.shadow.camera.left = -3; key.shadow.camera.right = 3;
-    key.shadow.camera.top = 3; key.shadow.camera.bottom = -3;
-    key.shadow.bias = -0.0012; key.shadow.radius = 3;
+    key.shadow.camera.near = 0.5; key.shadow.camera.far = 20;
+    key.shadow.camera.left = -3.5; key.shadow.camera.right = 3.5;
+    key.shadow.camera.top = 3.5; key.shadow.camera.bottom = -3.5;
+    key.shadow.bias = -0.0012; key.shadow.radius = 4;
     scene.add(key);
-    const rim = new THREE.DirectionalLight(0xffd7a8, 0.8);
-    rim.position.set(-3.2, 2.4, -2.6);
+
+    /* Back-left rim: this is what puts the bright edge down the side of the
+       cup and makes ice cubes sparkle instead of going flat and grey. */
+    const rim = new THREE.DirectionalLight(0xffffff, 2.2);
+    rim.position.set(-3.4, 3.2, -3.6);
     scene.add(rim);
+
+    /* Low warm bounce, standing in for light coming back off the table. */
+    const bounce = new THREE.DirectionalLight(0xffd9a8, 0.7);
+    bounce.position.set(0.5, -1.5, 2.5);
+    scene.add(bounce);
 
     /* Catches the shadow without painting a floor over the page background. */
     const floor = new THREE.Mesh(
@@ -155,96 +209,101 @@ const Scene3D = (() => {
      and taller; hot cups taper more and get a lid and a sleeve. */
   function buildCup(group, s) {
     const iced = s.temp !== 'hot';
-    const H = iced ? 2.5 : 2.0;
-    const rB = iced ? 0.72 : 0.68;       // radius at the base
-    const rT = iced ? 0.92 : 0.95;       // radius at the rim
-    const wall = 0.045;
+    const H = iced ? 2.6 : 2.05;
+    const rB = iced ? 0.66 : 0.66;
+    const rT = iced ? 0.94 : 0.95;
+    const wall = 0.04;
+    const radiusAt = y => rB + (rT - rB) * Math.pow(Math.max(0, y) / H, iced ? 1 : 0.86);
 
-    const outer = [];
-    const steps = 22;
-    for (let i = 0; i <= steps; i++) {
-      const u = i / steps;
-      const r = rB + (rT - rB) * Math.pow(u, iced ? 1 : 0.86);
-      outer.push([r, u * H]);
-    }
-    /* Turn back down the inside so the glass has real thickness to refract. */
-    const profile = [[0, 0], ...outer, [rT - wall * 0.6, H]];
+    /* --- the cup wall, lathed with real thickness --- */
+    const profile = [[0, 0], [rB, 0]];
+    const steps = 24;
+    for (let i = 1; i <= steps; i++) profile.push([radiusAt(i / steps * H), i / steps * H]);
     for (let i = steps; i >= 0; i--) {
-      const u = i / steps;
-      const r = (rB + (rT - rB) * Math.pow(u, iced ? 1 : 0.86)) - wall;
-      profile.push([Math.max(0.02, r), u * H + wall]);
+      const y = i / steps * H;
+      profile.push([Math.max(0.02, radiusAt(y) - wall), Math.max(wall, y)]);
     }
     profile.push([0, wall]);
-
     const shell = new THREE.Mesh(latheProfile(profile), iced ? glass() : matte(0xfffcf4));
-    shell.castShadow = true; shell.receiveShadow = true;
-    shell.renderOrder = 10;               // glass after its contents
+    shell.castShadow = true;
+    shell.renderOrder = 20;                       // the wall goes on last
     group.add(shell);
 
-    /* --- the liquid, as stacked bands --- */
-    const fill = H * (iced ? 0.88 : 0.83);
-    let y = 0;
-    for (const band of s.layers) {
-      const h = fill * band.h / 100;
-      const rAt = t => (rB + (rT - rB) * Math.pow(t / H, iced ? 1 : 0.86)) - wall * 1.4;
-      const geo = new THREE.CylinderGeometry(rAt(y + h), rAt(y), h, 64, 1, true);
-      const m = new THREE.Mesh(geo, liquid(band.color));
-      m.position.y = y + h / 2;
-      group.add(m);
-      y += h;
-    }
-    /* cap the column so you do not see down an open tube */
-    const topR = (rB + (rT - rB) * Math.pow(fill / H, iced ? 1 : 0.86)) - wall * 1.4;
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(topR, 64),
-      s.foam ? cream(s.foam) : liquid(s.layers[s.layers.length - 1].color));
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.y = fill + 0.002;
-    group.add(disc);
-
-    /* --- foam --- */
-    if (s.foam) {
-      const fh = 0.3;
-      const foam = new THREE.Mesh(
-        new THREE.CylinderGeometry(topR + 0.02, topR, fh, 64, 1, false),
-        cream(s.foam));
-      foam.position.y = fill + fh / 2;
-      foam.castShadow = true;
-      group.add(foam);
-      const dome = new THREE.Mesh(new THREE.SphereGeometry(topR + 0.02, 48, 20, 0, Math.PI * 2, 0, Math.PI / 2), cream(s.foam));
-      dome.scale.y = 0.34;
-      dome.position.y = fill + fh;
-      group.add(dome);
+    /* A rolled lip. Small detail, but its highlight is most of what tells
+       your eye the cup is made of thin plastic. */
+    if (iced) {
+      const lip = new THREE.Mesh(new THREE.TorusGeometry(rT + 0.005, 0.032, 12, 80), glass());
+      lip.rotation.x = Math.PI / 2;
+      lip.position.y = H;
+      lip.renderOrder = 21;
+      group.add(lip);
     }
 
-    /* --- ice --- */
+    const fill = H * (iced ? 0.93 : 0.85);
+
+    /* --- ice first, so it is inside the drink rather than floating on it --- */
     if (s.temp === 'iced') {
-      /* Ice floats, so sit it at the surface where it is actually visible
-         rather than burying it under an opaque column of coffee. */
-      const top = s.foam ? -0.42 : 0.0;      // tuck under the foam when there is one
-      const cubes = [[-0.30, top + 0.00, 0.12, 0.5], [0.32, top - 0.05, -0.14, -0.7],
-                     [-0.08, top - 0.32, 0.24, 1.2], [0.20, top - 0.36, 0.02, 0.3],
-                     [-0.30, top - 0.64, -0.18, -1.1]];
-      for (const [x, dy, z, rot] of cubes) {
-        const c = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.34, 0.34), iceMat());
-        c.position.set(x, fill + dy, z);
-        c.rotation.set(rot * 0.7, rot, rot * 0.4);
+      /* Fixed layout rather than random: it has to look deliberate, and it
+         must not reshuffle every time a syrup is tapped. */
+      const cubes = [
+        [-0.30, 0.42, 0.10, 0.52, 0.9], [ 0.33, 0.55,-0.16, 1.30, 0.8],
+        [ 0.02, 0.95, 0.26,-0.70, 1.0], [-0.34, 1.05,-0.22, 0.35, 0.85],
+        [ 0.31, 1.35, 0.14, 2.10, 0.95], [-0.06, 1.55,-0.30,-1.25, 0.8],
+        [-0.33, 1.85, 0.18, 0.80, 0.9], [ 0.30, 2.00,-0.10, 1.75, 0.85],
+        [ 0.00, 2.28, 0.22,-0.45, 1.0], [-0.28, 2.38,-0.16, 1.15, 0.9],
+        [ 0.26, 2.52, 0.06, 0.25, 0.8],
+      ];
+      for (const [x, y, z, rot, sc] of cubes) {
+        if (y > H + 0.1) continue;
+        const room = radiusAt(y) - wall - 0.16;
+        const size = 0.34 * sc;
+        const c = new THREE.Mesh(new THREE.BoxGeometry(size, size, size), iceMat());
+        const d = Math.hypot(x, z) || 1;
+        const k = Math.min(1, room / d);
+        c.position.set(x * k, y, z * k);
+        c.rotation.set(rot * 0.6, rot, rot * 0.35);
         c.castShadow = true;
         group.add(c);
       }
     }
 
-    /* --- straw --- */
-    if (s.temp === 'iced') {
-      const straw = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.075, 0.075, H * 1.5, 20),
-        matte(0xb8794b));
-      straw.position.set(0.16, H * 0.78, 0.34);
-      straw.rotation.set(0.16, 0, -0.22);
-      straw.castShadow = true;
-      group.add(straw);
+    /* --- the drink, in transmissive bands --- */
+    let y = 0;
+    for (const band of s.layers) {
+      const h = fill * band.h / 100;
+      const geo = new THREE.CylinderGeometry(
+        radiusAt(y + h) - wall * 1.2, radiusAt(y) - wall * 1.2, h, 72, 1, true);
+      const m = new THREE.Mesh(geo, liquid(band.color));
+      m.position.y = y + h / 2;
+      m.renderOrder = 5;
+      group.add(m);
+      y += h;
     }
 
-    /* --- lid and sleeve on a hot cup --- */
+    /* the surface of the drink */
+    const topR = radiusAt(fill) - wall * 1.2;
+    const disc = new THREE.Mesh(new THREE.CircleGeometry(topR, 72),
+      s.foam ? cream(s.foam) : liquid(s.layers[s.layers.length - 1].color));
+    disc.rotation.x = -Math.PI / 2;
+    disc.position.y = fill;
+    disc.renderOrder = 6;
+    group.add(disc);
+
+    /* --- foam --- */
+    if (s.foam) {
+      const fh = 0.26;
+      const foam = new THREE.Mesh(new THREE.CylinderGeometry(topR + 0.015, topR, fh, 72), cream(s.foam));
+      foam.position.y = fill + fh / 2;
+      foam.castShadow = true;
+      group.add(foam);
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(topR + 0.015, 48, 20, 0, Math.PI * 2, 0, Math.PI / 2), cream(s.foam));
+      dome.scale.y = 0.3;
+      dome.position.y = fill + fh;
+      group.add(dome);
+    }
+
+    /* --- lid and sleeve stay on the hot cup --- */
     if (!iced) {
       const lid = new THREE.Mesh(
         latheProfile([[0, 0], [rT + 0.04, 0], [rT + 0.05, 0.08], [rT - 0.02, 0.1],
@@ -253,24 +312,22 @@ const Scene3D = (() => {
       lid.position.y = H;
       lid.castShadow = true;
       group.add(lid);
-
-      const sleeveR = (rB + (rT - rB) * 0.45) + 0.03;
+      const sleeveR = radiusAt(H * 0.45) + 0.03;
       const sleeve = new THREE.Mesh(
-        new THREE.CylinderGeometry(sleeveR + 0.05, sleeveR, H * 0.42, 64, 1, true),
-        matte(0xded0b6));
+        new THREE.CylinderGeometry(sleeveR + 0.05, sleeveR, H * 0.42, 64, 1, true), matte(0xded0b6));
       sleeve.position.y = H * 0.44;
       sleeve.castShadow = true;
       group.add(sleeve);
     }
 
-    /* --- dusting on top --- */
+    /* --- dusting --- */
     if (s.dust && s.dust.length) {
-      const top = fill + (s.foam ? 0.42 : 0.02);
+      const top = fill + (s.foam ? 0.36 : 0.01);
       s.dust.forEach((hex, di) => {
         for (let i = 0; i < 14; i++) {
           const a = (i / 14) * Math.PI * 2 + di * 0.7;
-          const r = topR * (0.18 + 0.6 * ((i * 37 % 10) / 10));
-          const d = new THREE.Mesh(new THREE.SphereGeometry(0.028 + (i % 3) * 0.008, 8, 6), matte(hex));
+          const r = topR * (0.18 + 0.62 * ((i * 37 % 10) / 10));
+          const d = new THREE.Mesh(new THREE.SphereGeometry(0.03 + (i % 3) * 0.008, 8, 6), matte(hex));
           d.position.set(Math.cos(a) * r, top + 0.02, Math.sin(a) * r);
           group.add(d);
         }
