@@ -410,11 +410,11 @@ const BAKES = [
   { id:'k-rose', name:'Rose Pistachio Shortbread', ar_name:'شورت بريد الورد والفستق', cat:'cookie', price:1.100, c1:'#e0bcc4', c2:'#9a8a5c',
     desc:'Sandy, buttery, dusted with dried rose. Comes in the tin your grandmother will want back.',
     ar_desc:'رملية وزبدية ومرشوشة بالورد المجفف. تأتي في علبة ستطلبها جدتك.' },
-  { id:'k-iced', name:'Iced Message Cookie', ar_name:'كوكيز الرسالة المزيّنة', cat:'cookie', price:1.500, c1:'#f6ecd9', c2:'#c9a06a',
+  { id:'k-iced', name:'Message Cookie', ar_name:'كوكيز الرسالة', cat:'cookie', price:1.500, c1:'#f6ecd9', c2:'#c9a06a',
     tag:'Studio original', ar_tag:'من الاستوديو', tagClass:'tag-ember',
     desc:'A blank royal-iced plaque with your words piped on in the font you pick. Designed in the Cookie Studio.',
     ar_desc:'لوح آيسنغ ملكي فارغ تُكتب عليه كلماتك بالخط الذي تختاره. يُصمَّم في استوديو الكوكيز.' },
-  { id:'k-box12', name:'Iced Cookie Box, Twelve', ar_name:'علبة كوكيز مزيّنة، اثنتا عشرة', cat:'cookie', price:15.500, c1:'#f0dfc4', c2:'#b8794b',
+  { id:'k-box12', name:'Cookie Box, Twelve', ar_name:'علبة كوكيز، اثنتا عشرة', cat:'cookie', price:15.500, c1:'#f0dfc4', c2:'#b8794b',
     desc:'A dozen decorated cookies in a ribboned box. The Eid and graduation standby.',
     ar_desc:'اثنتا عشرة كوكيز مزيّنة في علبة بشريطة. الخيار المعتاد للعيد والتخرج.' },
 

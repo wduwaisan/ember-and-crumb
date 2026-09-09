@@ -1,3 +1,9 @@
+> **Superseded.** Every menu item and bag of beans now uses Ember & Crumb's
+> own brand photography, supplied as transparent PNGs and committed to
+> `img/menu` as WebP. This script is kept because it still documents how the
+> earlier images were made, and it is the fallback if artwork is ever missing
+> for a new item.
+
 # tools/cutout.py — how the menu PNGs were made
 
 The transparent product shots in `img/menu/` are not stock cut-outs; almost

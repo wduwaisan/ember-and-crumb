@@ -1,10 +1,15 @@
 /* ==========================================================================
    Ember & Crumb — photography
    --------------------------------------------------------------------------
-   Every photograph is from Unsplash, whose licence allows free use for any
-   purpose including commercial, with no attribution required. That matters:
-   this site is deployed at a public URL, and images lifted from Pinterest or
-   a mood-board blog would be someone else's copyrighted work sitting on it.
+   Two sources, in this order:
+
+   1. Ember & Crumb's own brand shots, committed to img/menu as transparent
+      WebP. Every menu item and every bag of beans has one. See CUTOUTS below.
+   2. Unsplash, for the home-page mood boards and as the fallback for anything
+      without a brand shot. Its licence allows free use for any purpose
+      including commercial, with no attribution required. That matters: this
+      site is deployed at a public URL, and images lifted from Pinterest or a
+      mood-board blog would be someone else's copyrighted work sitting on it.
 
    Images are hotlinked from the Unsplash CDN, which they support and which
    keeps the repository light — no binaries in git. Each URL asks for exactly
@@ -103,12 +108,23 @@ const Photos = (() => {
     slice:    '1536749605762-e7445a2d43ec',
   };
 
-  /* Cut-outs live in the repo as real transparent PNGs. They were produced
-     by running the U2Net salient-object model over the Unsplash originals
-     locally, so the subject sits on the cream card with no background box —
-     the product-shot look, from photographs we are actually licensed to use.
-     Beans keep their drawn artwork; a bag of coffee cuts out poorly. */
-  const cutout = id => (ITEM[id] && !id.startsWith('b-')) ? `img/menu/${id}.png` : null;
+  /* Transparent brand shots committed to img/menu as WebP — Ember & Crumb's
+     own product photography and bag artwork, not stock. WebP because the set
+     is 52 images: as PNG it came to 11MB, as WebP it is 2.3MB with the same
+     8-bit alpha, which the soft drop shadows need.
+
+     Listed explicitly rather than derived from an id prefix, so an item with
+     no artwork falls back to its Unsplash photo instead of 404ing. */
+  const CUTOUTS = new Set([
+    'b-costa','b-decaf','b-ember','b-espresso','b-geisha','b-kenya','b-nitro','b-png',
+    'b-qahwa','b-sumatra','b-yemen','b-yirg','c-basque','c-black','c-lemon','c-olive',
+    'c-pistachio','c-strawmatcha','c-tiramisu','d-banana','d-blue','d-chai','d-choc',
+    'd-cinn','d-cortado','d-datelatte','d-espresso','d-flat','d-ginger','d-hoji','d-lav',
+    'd-matcha','d-nitro','d-nitrosweet','d-qahwa','d-rcc','d-rosecard','d-strawmatcha',
+    'd-tonic','d-wafer','k-box12','k-brownbutter','k-datecard','k-iced','k-rose',
+    'p-croissant','p-date','p-kouign','p-morning','p-pain','p-pistachio','p-scone'
+  ]);
+  const cutout = id => CUTOUTS.has(id) ? `img/menu/${id}.webp` : null;
 
   const has = id => !!ITEM[id];
   const forItem = (id, w) => ITEM[id] ? url(ITEM[id], w) : null;

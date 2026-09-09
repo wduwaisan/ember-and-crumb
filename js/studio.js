@@ -16,7 +16,7 @@ const rnd = (i, salt = 1) => { const x = Math.sin((i + 1) * 12.9898 * salt) * 43
    ======================================================================== */
 const drink = {
   temp:'iced', size:'16', base:'espresso', milk:'whole',
-  syrups:{}, extras:[], finishes:[], notes:'', name:'',
+  syrups:{}, extras:[], finishes:[], notes:'', name:'', preset:'',
 };
 
 function drinkPrice() {
@@ -46,6 +46,7 @@ function syrupTint() {
 
 function drinkName() {
   if (drink.name.trim()) return drink.name.trim();
+  if (drink.preset) return drink.preset;
   const base = find(DRINK_OPTS.base, drink.base);
   const milk = find(DRINK_OPTS.milk, drink.milk);
   const syrup = Object.entries(drink.syrups).filter(([, n]) => n > 0).sort((a, b) => b[1] - a[1])[0];
@@ -153,7 +154,7 @@ function renderDrink() {
 const cake = {
   format:'6in', layers:4, sponge:'ladyfinger', soak:'strawmatcha',
   fillings:['mascarpone','matchacream','strawcomp'], exterior:'cocoadust',
-  garnishes:['g-fdstraw','g-matcha'], inscription:'', notes:'', name:'',
+  garnishes:['g-fdstraw','g-matcha'], inscription:'', notes:'', name:'', preset:'',
 };
 
 function cakePrice() {
@@ -170,6 +171,7 @@ function cakePrice() {
 
 function cakeName() {
   if (cake.name.trim()) return cake.name.trim();
+  if (cake.preset) return cake.preset;
   const sponge = find(CAKE_OPTS.sponge, cake.sponge);
   const soak = find(CAKE_OPTS.soak, cake.soak);
   const fill = cake.fillings[0] ? find(CAKE_OPTS.filling, cake.fillings[0]) : null;
@@ -276,7 +278,7 @@ function renderCake() {
 const cookie = {
   pack:'six', size:'md', shape:'round', dough:'sugar', icing:'white',
   text:'', font:'script', textColor:'#B8794B', textSize:17,
-  decor:['x-border'], notes:'', name:'',
+  decor:['x-border'], notes:'', name:'', preset:'',
 };
 
 function cookieQty() { return find(COOKIE_OPTS.pack, cookie.pack)?.qty || 1; }
@@ -296,6 +298,7 @@ function cookiePrice() {
 
 function cookieName() {
   if (cookie.name.trim()) return cookie.name.trim();
+  if (cookie.preset) return cookie.preset;
   const ar = I18N.isRTL();
   const shape = L(find(COOKIE_OPTS.shape, cookie.shape));
   const dough = L(find(COOKIE_OPTS.dough, cookie.dough));
@@ -607,9 +610,9 @@ function softPaint() {
 function applyPreset(kind, i) {
   const list = kind === 'drink' ? DRINK_PRESETS : kind === 'cake' ? CAKE_PRESETS : COOKIE_PRESETS;
   const p = list[i];
-  if (kind === 'drink') Object.assign(drink, { syrups:{}, extras:[], finishes:[], notes:'' }, structuredClone(p.state), { name:L(p) });
-  else if (kind === 'cake') Object.assign(cake, structuredClone(p.state), { name:L(p), notes:'' });
-  else Object.assign(cookie, structuredClone(p.state), { name:L(p), notes:'' });
+  if (kind === 'drink') Object.assign(drink, { syrups:{}, extras:[], finishes:[], notes:'' }, structuredClone(p.state), { name:'', preset:L(p) });
+  else if (kind === 'cake') Object.assign(cake, structuredClone(p.state), { name:'', preset:L(p), notes:'' });
+  else Object.assign(cookie, structuredClone(p.state), { name:'', preset:L(p), notes:'' });
   paint();
   toast(t('st.loaded', { name: L(p) }));
 }
@@ -623,7 +626,7 @@ function surprise() {
       base: pick(DRINK_OPTS.base).id, milk: pick(DRINK_OPTS.milk).id,
       syrups: Object.fromEntries(some(DRINK_OPTS.syrup, 1 + (Math.random() * 2 | 0)).map(id => [id, 1 + (Math.random() * 2 | 0)])),
       extras: some(DRINK_OPTS.extra, Math.random() * 3 | 0),
-      finishes: some(DRINK_OPTS.finish, 1 + (Math.random() * 2 | 0)), name: '',
+      finishes: some(DRINK_OPTS.finish, 1 + (Math.random() * 2 | 0)), name: '', preset: '',
     });
   } else if (mode === 'cake') {
     Object.assign(cake, {
@@ -631,7 +634,7 @@ function surprise() {
       sponge: pick(CAKE_OPTS.sponge).id, soak: pick(CAKE_OPTS.soak).id,
       fillings: some(CAKE_OPTS.filling, 1 + (Math.random() * 3 | 0)),
       exterior: pick(CAKE_OPTS.exterior).id,
-      garnishes: some(CAKE_OPTS.garnish, 1 + (Math.random() * 2 | 0)), name: '',
+      garnishes: some(CAKE_OPTS.garnish, 1 + (Math.random() * 2 | 0)), name: '', preset: '',
     });
   } else {
     Object.assign(cookie, {
@@ -640,7 +643,7 @@ function surprise() {
       icing: pick(COOKIE_OPTS.icing.filter(x => x.color)).id,
       font: pick(COOKIE_OPTS.font).id,
       textColor: pick(['#4C2D1F','#B8794B','#FFFBF2','#E3B45E','#C98A95']),
-      decor: some(COOKIE_OPTS.decor, 1 + (Math.random() * 2 | 0)), name: '',
+      decor: some(COOKIE_OPTS.decor, 1 + (Math.random() * 2 | 0)), name: '', preset: '',
     });
   }
   paint();
@@ -718,10 +721,11 @@ function initStudio() {
       const id = pump.dataset.id, d = +pump.dataset.pump;
       const next = Math.max(0, Math.min(4, (drink.syrups[id] || 0) + d));
       if (next) drink.syrups[id] = next; else delete drink.syrups[id];
+      drink.preset = '';
       return paint();
     }
     const ink = e.target.closest('[data-ink]');
-    if (ink) { cookie.textColor = ink.dataset.ink;
+    if (ink) { cookie.textColor = ink.dataset.ink; cookie.preset = '';
       $$('#inkRow .ink').forEach(b => b.classList.toggle('on', b === ink)); return softPaint(); }
 
     const preset = e.target.closest('[data-preset]');
@@ -758,16 +762,23 @@ function initStudio() {
         break;
       default: return;
     }
+    ({ temp:drink, size:drink, base:drink, milk:drink, syrup:drink, extra:drink, finish:drink,
+       format:cake, sponge:cake, soak:cake, exterior:cake, filling:cake, garnish:cake,
+       pack:cookie, ckSize:cookie, shape:cookie, dough:cookie, icing:cookie,
+       font:cookie, decor:cookie })[group].preset = '';
     paint();
   });
 
   $('#optPanel').addEventListener('input', e => {
     const el = e.target;
-    if (el.id === 'layerRange') { cake.layers = +el.value; return softPaint(); }
-    if (el.id === 'ck-size')    { cookie.textSize = +el.value; return softPaint(); }
+    if (el.id === 'layerRange') { cake.layers = +el.value; cake.preset = ''; return softPaint(); }
+    if (el.id === 'ck-size')    { cookie.textSize = +el.value; cookie.preset = ''; return softPaint(); }
     if (!el.dataset.bind) return;
     const [obj, key] = el.dataset.bind.split('.');
-    ({ drink, cake, cookie })[obj][key] = el.value;
+    const target = ({ drink, cake, cookie })[obj];
+    target[key] = el.value;
+    // typing your own name or a note does not change what is being made
+    if (key !== 'name' && key !== 'notes') target.preset = '';
     softPaint();
   });
 
