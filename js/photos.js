@@ -121,8 +121,10 @@ const Photos = (() => {
     'c-pistachio','c-strawmatcha','c-tiramisu','d-banana','d-blue','d-chai','d-choc',
     'd-cinn','d-cortado','d-datelatte','d-espresso','d-flat','d-ginger','d-hoji','d-lav',
     'd-matcha','d-nitro','d-nitrosweet','d-qahwa','d-rcc','d-rosecard','d-strawmatcha',
-    'd-tonic','d-wafer','k-box12','k-brownbutter','k-datecard','k-iced','k-rose',
-    'p-croissant','p-date','p-kouign','p-morning','p-pain','p-pistachio','p-scone'
+    'd-tonic','d-wafer','k-box12','k-brownbutter','k-caramel','k-datecard','k-ganache',
+    'k-iced','k-masc','k-matcha','k-pist','k-rose','k-royal','p-croissant','p-date',
+    'p-kouign','p-morning','p-pain','p-pistachio','p-scone','s-cardamom','s-culinary',
+    's-culture','s-pistachio','s-straw','s-vanilla'
   ]);
   const cutout = id => CUTOUTS.has(id) ? `img/menu/${id}.webp` : null;
 
