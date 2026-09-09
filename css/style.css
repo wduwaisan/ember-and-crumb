@@ -289,6 +289,11 @@ body::before{
 }
 .hero-disc::after{content:"";position:absolute;inset:7%;border:1px dashed rgba(36,24,18,.16);border-radius:50%}
 .spin-text{position:absolute;inset:-4%;animation:spin 44s linear infinite}
+/* The hero drink is a real cut-out photograph sitting on the disc. Height is
+   the controlled dimension so the glass keeps its proportions at every width,
+   and the drop shadow is what seats it on the disc instead of floating. */
+.hero-cup{position:relative;z-index:2;height:clamp(240px,30vw,340px);width:auto;
+  filter:drop-shadow(0 18px 26px rgba(76,45,31,.24))}
 @keyframes spin{to{transform:rotate(360deg)}}
 .float-chip{
   position:absolute;background:var(--paper);border:1px solid var(--line);border-radius:var(--r-pill);

@@ -79,26 +79,8 @@ page("index.html",
           <textPath href="#circ" startOffset="0%">SMALL-BATCH ROASTERY · DAWN BAKEHOUSE · MAKE YOUR OWN · SMALL-BATCH ROASTERY · DAWN BAKEHOUSE · </textPath>
         </text>
       </svg>
-      <div class="cup iced" style="width:136px;height:230px;position:relative;z-index:2">
-        <div class="straw"></div>
-        <div class="cup-body">
-          <div class="cup-liquid" style="height:89%">
-            <div class="layer" style="bottom:0;height:58.6%;background:#f0c2c9"></div>
-            <div class="layer" style="bottom:58%;height:14.6%;background:#c3bd9c"></div>
-            <div class="layer" style="bottom:72%;height:28.6%;background:#7ea24f"></div>
-            <div class="ice" style="inset-inline-start:14%;top:12%;width:17px;height:17px;--rot:-12deg"></div>
-            <div class="ice" style="inset-inline-start:52%;top:9%;width:20px;height:20px;--rot:9deg;animation-delay:-1.4s"></div>
-            <div class="ice" style="inset-inline-start:30%;top:30%;width:16px;height:16px;--rot:22deg;animation-delay:-3s"></div>
-            <div class="ice" style="inset-inline-start:60%;top:44%;width:18px;height:18px;--rot:-8deg;animation-delay:-2.2s"></div>
-          </div>
-          <div class="foam" style="bottom:88%;height:17%;background:linear-gradient(#fbdde1,#f2b9c0)"></div>
-        </div>
-        <div class="garnish-row" style="top:-6%">
-          <span class="g-dot" style="background:#d9566c"></span>
-          <span class="g-dot" style="background:#7d9c4e;width:10px;height:10px"></span>
-          <span class="g-dot" style="background:#d9566c;width:8px;height:8px"></span>
-        </div>
-      </div>
+      <img class="hero-cup" src="img/hero-strawmatcha.webp" alt=""
+        width="441" height="700" decoding="async" fetchpriority="high">
       <div class="float-chip c1"><i style="background:#e5b3bb">🍓</i> <span data-i18n="h.chip1"></span></div>
       <div class="float-chip c2"><i style="background:#bcd4a5">🍵</i> <span data-i18n="h.chip2"></span></div>
       <div class="float-chip c3"><i style="background:#e0c9a3">🥛</i> <span data-i18n="h.chip3"></span></div>
