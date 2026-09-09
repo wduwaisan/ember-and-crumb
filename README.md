@@ -34,6 +34,10 @@ back to a weaker function. Use a server.)
 css/style.css   design tokens, components, all three preview renderers, RTL rules
 js/globe.js     the 3-D origin globe: projection, spin, fly-to, hit testing
 js/reviews.js   ratings and reviews: store, seed data, star rendering, panel
+js/config.js    Supabase credentials + which sign-in providers are enabled
+js/backend.js   the only file that talks to Supabase
+js/email.js     email plausibility: keysmash, typo and fake-domain rejection
+supabase/       schema.sql (tables, RLS, triggers) and SETUP.md
 js/i18n.js      the English/Arabic dictionary, direction switch and re-render bus
 js/data.js      catalogue, ingredients, brew methods, world geometry, presets
 js/store.js     accounts, cart, orders, saved recipes (localStorage)
@@ -165,22 +169,45 @@ so `13.100` would read as `١٣٠١٠٠`.
 | Toffee Brown `#B8794B` | accent, links, primary hover |
 | Espresso `#4C2D1F` | text, buttons, footer |
 
-## About the accounts — read this
+## Accounts — now a real backend
 
-This is a **front-end demo**. Sign-up, log-in, sessions, the cart, orders and saved
-recipes all work, but they live in `localStorage` in the visitor's own browser:
+Accounts, crumbs, orders, saved recipes, reviews and the cart live in **Supabase**
+(project `ztotgsiwivdbznifbpdh`). An account works on any device, and a review one
+person writes is a review everyone reads.
 
-- an account only exists on the device it was created on;
-- reviews are shared between accounts on that browser, but go no further;
-- clearing site data deletes everything, permanently;
-- there is no server, so nothing is shared between visitors.
+Sign in by **email, phone code, Google or Facebook** — see
+[`supabase/SETUP.md`](./supabase/SETUP.md) for which of those still need
+configuring in the dashboard.
 
-Passwords are salted with 12 random bytes and SHA-256 hashed via the Web Crypto API
-rather than stored as text, and the login error is identical for a wrong password and
-an unknown email so the form cannot be used to enumerate accounts. That is good
-hygiene for a demo, **not** a substitute for a real backend — anyone can read and
-rewrite localStorage from the console. Do not put a real password in it. Moving to a
-real backend means replacing `js/store.js`; nothing else touches storage directly.
+Three things are enforced by the database rather than trusted from the browser,
+and each is verified rather than assumed:
+
+| Guarantee | How | Verified |
+| --- | --- | --- |
+| Crumbs cannot be forged | trigger awards them; client is column-revoked from `profiles.crumbs` | update attempt returns *permission denied* |
+| Anonymous reviews stay anonymous | public reads go through `reviews_public`, which has no `user_id` column | column absent; `display_name` is `null` on anonymous rows |
+| "Bought this" cannot be faked | trigger checks the reviewer's real orders | `false` on a product never ordered |
+
+Row Level Security is on for all five tables: you can only ever read your own
+profile, orders, recipes and cart.
+
+**Sign-up is instant** — email confirmation is off, because Supabase's built-in
+mailer on the free plan caps at a few messages an hour and would silently fail for
+real visitors. What stops junk addresses instead is `js/email.js`, which is strict
+about the domain and only structural about the part before the `@`. That asymmetry
+is deliberate: `t054128@coded.edu.kw` is a real university login that any
+"looks random" check would wrongly reject. It catches keysmashes, fake and
+placeholder domains, throwaway inboxes and near-miss typos (offering a one-tap fix),
+and optionally confirms the domain has an MX record via DNS-over-HTTPS — sending
+only the domain, never the address, and failing open so a network hiccup never
+blocks a real person.
+
+### Turning the backend off
+
+Blank the two strings in `js/config.js` and the whole site reverts to the original
+localStorage behaviour with no code changes and no errors — handy for demoing
+offline. In that mode passwords are salted and SHA-256 hashed locally, which is
+reasonable hygiene for a demo but is not real auth.
 
 Prices are illustrative Kuwaiti dinar with a 5% service charge, not a tax filing.
 

@@ -111,6 +111,13 @@ const Store = (() => {
     if (name.length < 2) throw new Error(t('err.name'));
     if (String(password).length < 8) throw new Error(t('err.pw'));
 
+    /* Sign-up is instant — no confirmation mail — so this is the only gate
+       against junk addresses. Strict on the domain, structural on the rest. */
+    const check = EmailCheck.validate(email);
+    if (!check.ok) { const e = new Error(check.error); e.suggestion = check.suggestion; throw e; }
+    email = check.email;
+    if (!(await EmailCheck.hasMailServer(email.split('@')[1]))) throw new Error(t('em.noServer'));
+
     if (cloud) {
       const { needsConfirm } = await Backend.signUpEmail({ name, email: norm(email), password });
       if (needsConfirm) { emit('confirm', norm(email)); return { name, email: norm(email), pending: true }; }
@@ -118,7 +125,6 @@ const Store = (() => {
     }
 
     email = norm(email);
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) throw new Error(t('err.email'));
     const all = users();
     if (all[email]) throw new Error(t('err.exists'));
     const salt = makeSalt();

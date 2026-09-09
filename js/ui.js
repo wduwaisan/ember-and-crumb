@@ -462,7 +462,16 @@ function wireAuth() {
   $$('.method', m).forEach(b => b.onclick = () => setAuthVia(b.dataset.via));
 
   const err = $('#authErr');
-  const fail = msg => { err.textContent = msg; err.classList.add('show'); };
+  const fail = (msg, suggestion) => {
+    err.textContent = msg; err.classList.add('show');
+    if (suggestion) {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'btn btn-quiet fix-email';
+      b.textContent = t('em.useIt', { good: suggestion.split('@')[1] });
+      b.onclick = () => { const f = $('#au-email'); if (f) { f.value = suggestion; f.focus(); } err.classList.remove('show'); };
+      err.append(' ', b);
+    }
+  };
 
   $$('[data-oauth]', m).forEach(b => b.onclick = async () => {
     const p = b.dataset.oauth;
@@ -516,7 +525,7 @@ function wireAuth() {
       closeAll();
       toast(t(authMode === 'login' ? 'auth.hiBack' : 'auth.hiNew', { name: (u?.name || '').split(' ')[0] }), I.check);
     } catch (ex) {
-      fail(ex.message);
+      fail(ex.message, ex.suggestion);
     } finally {
       const b = $('#authSubmit'); if (b) { b.disabled = false; b.textContent = label; }
     }

@@ -30,6 +30,7 @@ HEAD = """<!DOCTYPE html>
 FOOT = """</main>
 <script src="js/i18n.js"></script>
 <script src="js/config.js"></script>
+<script src="js/email.js"></script>
 <script src="js/backend.js"></script>
 <script src="js/data.js"></script>
 <script src="js/store.js"></script>
