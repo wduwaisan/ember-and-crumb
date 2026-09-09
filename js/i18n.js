@@ -316,6 +316,17 @@ I18N.extend({
   'h.comeCta2':     ['Book a class', 'احجز دورة'],
   'h.openDaily':    ['Open daily', 'مفتوح يومياً'],
 
+  'h.cgEyebrow':    ['Around the shop', 'من داخل المحل'],
+  'h.cgTitle':      ['Mornings here, more or less.', 'صباحاتنا هنا، تقريباً.'],
+  'h.cg1':          ['the counter, 6:40am', 'الكاونتر، ٦:٤٠ صباحاً'],
+  'h.cg2':          ['the pour', 'السكب'],
+  'h.cg3':          ['out of the oven', 'خارج من الفرن'],
+  'h.cg4':          ['crema', 'الكريما'],
+  'h.cg5':          ['the window seat', 'مقعد النافذة'],
+  'h.cg6':          ['grinding for the bar', 'طحن للبار'],
+  'h.cgQuote':      ['“Everything here starts before the sun does.”', '«كل شيء هنا يبدأ قبل الشمس.»'],
+  'f.photos':       ['Photography via Unsplash', 'الصور من Unsplash'],
+
   /* ---- recipe of the month ---- */
   'mo.eyebrow':     ['Recipe of the month', 'وصفة الشهر'],
   'mo.title':       ['Designed by a guest. Now on the board.', 'صمّمها ضيف. والآن على اللوح.'],

@@ -80,8 +80,11 @@ function artwork(item, kind) {
 
 function productCard(item, kind, opts = {}) {
   const tag = L(item, 'tag');
+  /* A real photograph where we have one; the drawn artwork is the fallback,
+     so nothing ever renders as an empty box. */
+  const shot = Photos.tile(item, 420);
   return `<article class="card reveal">
-    <div class="card-media">${artwork(item, kind)}
+    <div class="card-media">${shot || artwork(item, kind)}
       ${tag ? `<span class="tag ${item.tagClass || ''} badge-float">${esc(tag)}</span>` : ''}</div>
     <div class="card-body">
       ${opts.sub ? `<span class="eyebrow no-rule" style="font-size:.64rem;color:var(--ink-40)">${esc(opts.sub)}</span>` : ''}
@@ -158,6 +161,29 @@ function monthlyHTML() {
   </div>`;
 }
 
+/* The mood board. Deliberately imperfect: pieces overlap, sit at slight
+   angles and vary in size, the way a pinned board does. */
+const COLLAGE = [
+  { k: 'counter', cls: 'c1', cap: 'h.cg1' },
+  { k: 'pour',    cls: 'c2', cap: 'h.cg2' },
+  { k: 'pastry',  cls: 'c3', cap: 'h.cg3' },
+  { k: 'crema',   cls: 'c4', cap: 'h.cg4' },
+  { k: 'window',  cls: 'c5', cap: 'h.cg5' },
+  { k: 'grinder', cls: 'c6', cap: 'h.cg6' },
+];
+
+function collageHTML() {
+  return `<div class="collage">
+    ${COLLAGE.map(p => `
+      <figure class="cg ${p.cls}">
+        <img src="${Photos.mood(p.k, 420)}" alt="" loading="lazy" decoding="async"
+             onload="this.classList.add('in')">
+        <figcaption>${t(p.cap)}</figcaption>
+      </figure>`).join('')}
+    <blockquote class="cg-quote">${t('h.cgQuote')}</blockquote>
+  </div>`;
+}
+
 function initHome() {
   const root = $('#monthlyRoot'); if (!root) return;
 
@@ -168,6 +194,13 @@ function initHome() {
       .map(id => BEANS.find(x => x.id === id))
       .map(b => productCard(b, 'bag', { sub: L(b, 'origin'), note: `${L(b,'roast')} · ${L(b,'notes')}` })).join('');
     root.innerHTML = monthlyHTML();
+    const cg = $('#collageRoot'); if (cg) cg.innerHTML = collageHTML();
+    revealPhotos();
+    const hero = $('#heroShot');
+    if (hero && !hero.dataset.loaded) {
+      hero.style.backgroundImage = `url("${Photos.mood('hero', 900)}")`;
+      hero.dataset.loaded = '1';
+    }
 
     /* Draw the month's creation using the real Studio renderer. */
     const cur = MONTHLY_RECIPES.find(r => r.current) || MONTHLY_RECIPES[0];
@@ -177,7 +210,7 @@ function initHome() {
       else if (cur.mode === 'cake') { Object.assign(cake, cur.state); viz.innerHTML = renderCake(); }
       else { Object.assign(cookie, cur.state); viz.innerHTML = renderCookie(); }
     }
-    initReveal();
+    initReveal(); revealPhotos();
   };
   draw();
 
@@ -213,8 +246,9 @@ function menuRow(item, kind) {
   const tag = L(item, 'tag');
   const whole = item.whole
     ? `<button class="btn btn-ghost btn-sm" data-add="${esc(item.id)}" data-kind="${kind}" data-whole="1">${t('c.whole', { p: money(item.whole) })}</button>` : '';
+  const shot = Photos.tile(item, 72, 'menu-photo');
   return `<div class="menu-item">
-    <div class="menu-swatch" style="background:linear-gradient(150deg,${lighten(item.c1,.18)},${item.c2})"></div>
+    <div class="menu-swatch" style="background:linear-gradient(150deg,${lighten(item.c1,.18)},${item.c2})">${shot || ''}</div>
     <div class="menu-main">
       <b>${esc(L(item))}</b>${tag ? `<span class="tag ${item.tagClass || ''}">${esc(tag)}</span>` : ''}
       <p>${esc(L(item, 'desc'))}</p>
@@ -242,6 +276,7 @@ function initMenu() {
       </section>`;
     }).join('');
     applyFilter();
+    revealPhotos(root);
   };
 
   const applyFilter = () => {
@@ -331,7 +366,7 @@ function initShop() {
       sub: L(b, 'origin'),
       note: m ? `${t('bf.grind')}: ${L(m, 'grind')} · ${L(b, 'notes')}` : `${L(b, 'roast')} · ${L(b, 'notes')}`,
     })).join('');
-    initReveal();
+    initReveal(); revealPhotos();
   };
 
   const drawSupplies = () => {
@@ -340,7 +375,7 @@ function initShop() {
     $('#syrupGrid').innerHTML = syrups.map(s => productCard(s, s.cat === 'syrup' ? 'bottle' : 'tub', { sub: L(s, 'notes') })).join('');
     $('#supplyGrid').innerHTML = rest.map(s => productCard(s, 'bag', { sub: L(s, 'notes') })).join('');
     applyShopFilter();
-    initReveal();
+    initReveal(); revealPhotos();
   };
 
   const SHOP_CATS = ['all','bean','syrup','cream','flour','chocolate','matcha','pantry','tools'];

@@ -239,7 +239,7 @@ function footerHTML() {
     </div>
     <div class="footer-note">
       <span>${t('f.addr', { y: num(new Date().getFullYear()) })}</span>
-      <span>${t('f.demo')}</span>
+      <span>${t('f.demo')} · ${t('f.photos')}</span>
     </div>
   </div>`;
 }
@@ -640,6 +640,16 @@ function initScreenOut() {
     setTimeout(() => { location.href = a.href; }, 260);
   });
   addEventListener('pageshow', () => document.body.classList.remove('leaving'));
+}
+
+/* Photographs fade up when they arrive. An inline onload is not enough:
+   an image served from cache can already be complete before the handler is
+   attached, and then it would sit at opacity 0 forever. */
+function revealPhotos(root = document) {
+  root.querySelectorAll('img.photo:not(.in), .cg img:not(.in)').forEach(img => {
+    if (img.complete && img.naturalWidth > 0) img.classList.add('in');
+    else img.addEventListener('load', () => img.classList.add('in'), { once: true });
+  });
 }
 
 /* ------------------------------------------------------- reveal on scroll */

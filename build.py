@@ -32,6 +32,7 @@ FOOT = """</main>
 <script src="js/config.js"></script>
 <script src="js/email.js"></script>
 <script src="js/backend.js"></script>
+<script src="js/photos.js"></script>
 <script src="js/data.js"></script>
 <script src="js/store.js"></script>
 <script src="js/ui.js"></script>
@@ -177,6 +178,16 @@ page("index.html",
   </div>
 </section>
 
+<section class="section-tight" id="collage">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <div><span class="eyebrow" data-i18n="h.cgEyebrow"></span>
+        <h2 class="h2" style="margin-top:1rem" data-i18n="h.cgTitle"></h2></div>
+    </div>
+    <div id="collageRoot"></div>
+  </div>
+</section>
+
 <section class="section-tight" id="monthly">
   <div class="wrap">
     <div class="section-head reveal">
@@ -223,8 +234,8 @@ page("index.html",
 <section class="section-tight" style="padding-bottom:clamp(4rem,9vw,7rem)">
   <div class="wrap">
     <div class="split reverse reveal">
-      <div class="split-media" style="background:linear-gradient(200deg,#4C2D1F,#6B4430);display:grid;place-items:center;aspect-ratio:16/11">
-        <div class="center" style="color:#F3E7D2;padding:2rem">
+      <div class="split-media hero-shot" id="heroShot" style="display:grid;place-items:center;aspect-ratio:16/11">
+        <div class="center" style="color:#F3E7D2;padding:2rem;position:relative;z-index:1">
           <div class="eyebrow no-rule" style="color:#CE9464" data-i18n="h.openDaily"></div>
           <p style="font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);line-height:1.05;margin-top:1rem">7am<br>— 11pm</p>
           <p style="margin-top:1.25rem;font-size:.9rem;opacity:.72;line-height:1.7" data-i18n="v.eyebrow"></p>

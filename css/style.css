@@ -966,6 +966,100 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   .btn-oauth{padding:.95em 1.4em}
 }
 
+
+/* ==========================================================================
+   Photography
+   ========================================================================== */
+.photo{
+  width:100%;height:100%;object-fit:cover;display:block;
+  opacity:0;transition:opacity .55s var(--ease),transform .7s var(--ease);
+  transform:scale(1.04);
+}
+.photo.in{opacity:1;transform:none}
+.card-media .photo{position:absolute;inset:0}
+.card:hover .card-media .photo{transform:scale(1.045)}
+.card-media{background:var(--sand-soft)}
+
+.menu-swatch{overflow:hidden;position:relative}
+.menu-photo{position:absolute;inset:0}
+
+/* A warm wash so mixed stock photography still reads as one shop. */
+.card-media::after,.hero-shot::after,.cg::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(180deg,rgba(253,247,228,.06),rgba(184,121,75,.14));
+  mix-blend-mode:multiply;
+}
+.hero-shot{
+  position:relative;overflow:hidden;border-radius:var(--r-xl);
+  background-size:cover;background-position:center;
+}
+.hero-shot::before{
+  content:"";position:absolute;inset:0;
+  background:linear-gradient(200deg,rgba(76,45,31,.78),rgba(76,45,31,.52));
+}
+
+/* ==========================================================================
+   Mood board
+   ========================================================================== */
+.collage{
+  position:relative;display:grid;gap:1rem;
+  grid-template-columns:repeat(6,1fr);
+  grid-auto-rows:112px;
+  padding:1rem .5rem 2.5rem;
+}
+.cg{
+  position:relative;margin:0;overflow:hidden;border-radius:var(--r-sm);
+  background:var(--sand-soft);box-shadow:var(--shadow-md);
+  border:6px solid #fffdf7;                      /* a printed edge */
+  transition:transform .45s var(--ease),box-shadow .45s var(--ease);
+}
+.cg img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s var(--ease)}
+.cg img.in{opacity:1}
+.cg figcaption{
+  position:absolute;left:0;right:0;bottom:0;z-index:2;
+  padding:1.4rem .7rem .5rem;color:#fffaf0;font-size:.7rem;letter-spacing:.06em;
+  background:linear-gradient(transparent,rgba(45,26,17,.72));
+}
+.cg:hover{transform:translateY(-6px) rotate(0deg) scale(1.02);box-shadow:var(--shadow-lg);z-index:5}
+
+.cg.c1{grid-column:1 / span 2; grid-row:1 / span 3; transform:rotate(-1.6deg)}
+.cg.c2{grid-column:3 / span 2; grid-row:1 / span 2; transform:rotate(1.2deg)}
+.cg.c3{grid-column:5 / span 2; grid-row:1 / span 3; transform:rotate(-.8deg)}
+.cg.c4{grid-column:3 / span 1; grid-row:3 / span 2; transform:rotate(2deg)}
+.cg.c5{grid-column:4 / span 2; grid-row:3 / span 2; transform:rotate(-1.4deg)}
+.cg.c6{grid-column:1 / span 2; grid-row:4 / span 2; transform:rotate(1.6deg)}
+
+.cg-quote{
+  grid-column:6 / span 1; grid-row:4 / span 2;
+  margin:0;display:grid;align-content:center;
+  font-family:var(--serif);font-style:italic;font-size:1rem;line-height:1.45;
+  color:var(--ink-70);padding:.5rem;
+}
+[dir="rtl"] .cg{transform:none}
+[dir="rtl"] .cg.c1,[dir="rtl"] .cg.c3{transform:rotate(1.2deg)}
+
+@media (max-width:900px){
+  .collage{grid-template-columns:repeat(4,1fr);grid-auto-rows:96px}
+  .cg.c1{grid-column:1 / span 2; grid-row:1 / span 3}
+  .cg.c2{grid-column:3 / span 2; grid-row:1 / span 2}
+  .cg.c3{grid-column:3 / span 2; grid-row:3 / span 3}
+  .cg.c4{grid-column:1 / span 1; grid-row:4 / span 2}
+  .cg.c5{grid-column:2 / span 1; grid-row:4 / span 2}
+  .cg.c6{grid-column:1 / span 2; grid-row:6 / span 2}
+  .cg-quote{grid-column:3 / span 2; grid-row:6 / span 2;font-size:.92rem}
+}
+@media (max-width:640px){
+  .collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:84px;gap:.7rem}
+  .cg{border-width:4px}
+  .cg.c1{grid-column:1 / span 1; grid-row:1 / span 3}
+  .cg.c2{grid-column:2 / span 1; grid-row:1 / span 2}
+  .cg.c3{grid-column:2 / span 1; grid-row:3 / span 3}
+  .cg.c4{grid-column:1 / span 1; grid-row:4 / span 2}
+  .cg.c5{grid-column:1 / span 2; grid-row:6 / span 2}
+  .cg.c6{grid-column:1 / span 1; grid-row:8 / span 2}
+  .cg-quote{grid-column:2 / span 1; grid-row:8 / span 2;font-size:.85rem}
+}
+
 /* ==========================================================================
    Ratings & reviews
    ========================================================================== */

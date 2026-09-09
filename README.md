@@ -37,6 +37,7 @@ js/reviews.js   ratings and reviews: store, seed data, star rendering, panel
 js/config.js    Supabase credentials + which sign-in providers are enabled
 js/backend.js   the only file that talks to Supabase
 js/email.js     email plausibility: keysmash, typo and fake-domain rejection
+js/photos.js    the Unsplash photo map and the home-page mood board
 supabase/       schema.sql (tables, RLS, triggers) and SETUP.md
 js/i18n.js      the English/Arabic dictionary, direction switch and re-render bus
 js/data.js      catalogue, ingredients, brew methods, world geometry, presets
@@ -159,6 +160,24 @@ loosens the headline leading (Arabic needs more than the tight Latin tracking), 
 renders numbers in Arabic-Indic digits with **U+066B** as the decimal mark — a plain
 full stop next to Arabic-Indic digits is visually identical to the zero glyph (٠),
 so `13.100` would read as `١٣٠١٠٠`.
+
+## Photography
+
+Every photograph comes from **Unsplash**, whose licence permits free use for any
+purpose, commercial included, with no attribution required. They are hotlinked
+from the Unsplash CDN — which Unsplash supports — so the repository stays free of
+binaries and each request asks for exactly the width it will be displayed at.
+
+This matters because the site is deployed at a public URL. Images pulled off
+Pinterest or a mood-board blog are somebody else's copyrighted work, and a real
+takedown lands on the account that published them. Unsplash gets the same look
+without that exposure. Every photo id in `js/photos.js` was verified to load
+before it was committed.
+
+Images fade up once decoded, over the item's own colours so a slow connection
+never shows a white hole. The reveal cannot rely on an inline `onload`: an image
+already cached is complete before the handler attaches, and would sit invisible
+forever — so `revealPhotos()` checks `complete` first and only then listens.
 
 ## Palette
 
