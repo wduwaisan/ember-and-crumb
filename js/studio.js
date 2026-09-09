@@ -74,43 +74,6 @@ function drinkRecipe() {
   return bits.join(' · ');
 }
 
-/* The layer maths, computed once and shared: the flat preview draws it as
-   CSS bands, the 3D view spins it into stacked solids. */
-function drinkComposition() {
-  const baseOpt = find(DRINK_OPTS.base, drink.base);
-  const milkOpt = find(DRINK_OPTS.milk, drink.milk);
-  const { color: sc, pumps } = syrupTint();
-  const hasMilk = milkOpt.color !== null;
-  const topPour = TOP_POUR.includes(drink.base);
-
-  const layers = [];
-  const push = (h, color) => layers.push({ h, color });
-  const tintedBase = sc ? mix(baseOpt.color, sc, Math.min(.34, pumps * .09)) : baseOpt.color;
-
-  if (!hasMilk) {
-    push(100, drink.extras.includes('tonic') ? lighten(tintedBase, .40) : tintedBase);
-  } else {
-    const milkMixed = sc ? mix(milkOpt.color, sc, Math.min(.62, pumps * .17)) : milkOpt.color;
-    const deep = darken(tintedBase, .04);
-    if (topPour) { push(58, milkMixed); push(14, mix(milkMixed, deep, .5)); push(28, deep); }
-    else         { push(34, deep); push(13, mix(deep, milkMixed, .55)); push(53, milkMixed); }
-  }
-  if (drink.base === 'nitrocb' || drink.temp === 'nitro') {
-    const last = layers[layers.length - 1];
-    layers[layers.length - 1] = { h: last.h, color: lighten(last.color, .16) };
-  }
-
-  const foamExtra = drink.extras.map(id => find(DRINK_OPTS.extra, id)).find(e => e && e.foam);
-  const foam = foamExtra ? foamExtra.color : (drink.temp === 'nitro' ? '#e2cdae' : null);
-  const fins = drink.finishes.map(id => find(DRINK_OPTS.finish, id)).filter(Boolean);
-
-  return {
-    temp: drink.temp, size: drink.size, layers, foam,
-    dust: fins.filter(f => !f.drizzle).map(f => f.color),
-    drizzle: fins.filter(f => f.drizzle).map(f => f.color),
-  };
-}
-
 function renderDrink() {
   const size = find(DRINK_OPTS.size, drink.size);
   const baseOpt = find(DRINK_OPTS.base, drink.base);
@@ -612,22 +575,9 @@ const MODES = {
   cookie: { render: renderCookie, name: cookieName, recipe: cookieRecipe, price: cookiePrice, panel: cookiePanel, lead: 'st.readyCookie' },
 };
 
-/* Which modes have a 3D build yet. The rest keep the flat preview. */
-const HAS_3D = { drink: true, cake: false, cookie: false };
-
 function paintStage() {
   const M = MODES[mode];
-  const viz = $('#stageViz');
-  const flat = $('#stageFlat') || viz;
-  flat.innerHTML = M.render() + '<div class="stage-shadow"></div>';
-
-  const host = $('#stage3d');
-  const use3D = !!(host && window.Scene3D && Scene3D.available && HAS_3D[mode]);
-  viz.classList.toggle('viz-3d', use3D);
-  if (use3D) {
-    Scene3D.mount(host, mode, { dist: 6.0, height: 1.2 });
-    Scene3D.update(host, drinkComposition());
-  }
+  $('#stageViz').innerHTML = M.render() + '<div class="stage-shadow"></div>';
   $('#stageName').textContent = M.name();
   $('#stageRecipe').textContent = M.recipe();
   $('#stagePrice').innerHTML = `<small>${t('st.yourPrice')}</small>${money(M.price())}`;
@@ -825,5 +775,3 @@ function initStudio() {
 }
 
 document.addEventListener('DOMContentLoaded', () => { if ($('#optPanel')) initStudio(); });
-/* three.js is a module and lands after DOMContentLoaded — repaint when it does. */
-addEventListener('ec:3d-ready', () => { if ($('#optPanel')) paintStage(); });
