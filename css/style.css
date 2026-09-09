@@ -612,7 +612,7 @@ body::before{
   border-bottom:1px solid var(--line);transition:background .2s;position:relative;
 }
 .menu-item:hover{background:var(--paper)}
-.menu-swatch{width:46px;height:46px;border-radius:var(--r-sm);flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(36,24,18,.1)}
+.menu-swatch{width:84px;height:84px;border-radius:var(--r-md);flex-shrink:0;box-shadow:inset 0 0 0 1px rgba(76,45,31,.12)}
 .menu-main{flex:1;min-width:0}
 .menu-main b{font-family:var(--serif);font-size:1.06rem;font-weight:600;letter-spacing:-.01em;display:inline-block}
 .menu-main .tag{margin-left:.5rem;transform:translateY(-1px)}
