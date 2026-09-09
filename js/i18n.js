@@ -318,12 +318,22 @@ I18N.extend({
 
   'h.cgEyebrow':    ['Around the shop', 'من داخل المحل'],
   'h.cgTitle':      ['Mornings here, more or less.', 'صباحاتنا هنا، تقريباً.'],
-  'h.cg1':          ['the counter, 6:40am', 'الكاونتر، ٦:٤٠ صباحاً'],
-  'h.cg2':          ['the pour', 'السكب'],
-  'h.cg3':          ['out of the oven', 'خارج من الفرن'],
-  'h.cg4':          ['crema', 'الكريما'],
-  'h.cg5':          ['the window seat', 'مقعد النافذة'],
-  'h.cg6':          ['grinding for the bar', 'طحن للبار'],
+  'h.cg1':          ['cinnamon buns, down by the water', 'لفائف القرفة، عند الماء'],
+  'h.cg2':          ['the quiet hour', 'الساعة الهادئة'],
+  'h.cg3':          ['matcha for the drive home', 'ماتشا لطريق العودة'],
+  'h.cg4':          ['the case, mid-morning', 'الفاترينة، منتصف الصباح'],
+  'h.cg5':          ['rain, and the lights on', 'مطر، والأضواء مضاءة'],
+
+  /* full-bleed band */
+  'h.bandEyebrow':  ['Most afternoons', 'أغلب فترات العصر'],
+  'h.bandLine':     ['Two iced, one small table, and nowhere in particular to be.',
+                     'قهوتان مثلجتان، طاولة صغيرة، ولا مكان معيّن نقصده.'],
+
+  /* shot-on-a-phone section */
+  'h.shotEyebrow':  ['Straight off the phone', 'مباشرة من الجوال'],
+  'h.shotTitle':    ['Nothing here is styled.', 'لا شيء هنا مُنسَّق.'],
+  'h.shotBody':     ['Every photograph on this site was taken on a phone — at the counter, or on the way out, in whatever light the morning happened to give us. No studio, no stand-ins. What you see is what gets handed across the counter.',
+                     'كل صورة في هذا الموقع التُقطت بالجوال — عند الكاونتر أو في طريق الخروج، بالضوء الذي منحنا إياه الصباح. بلا استوديو ولا بدائل. ما تراه هو ما سيُسلَّم إليك عبر الكاونتر.'],
   'h.cgQuote':      ['“Everything here starts before the sun does.”', '«كل شيء هنا يبدأ قبل الشمس.»'],
   'f.photos':       ['Photography via Unsplash', 'الصور من Unsplash'],
 

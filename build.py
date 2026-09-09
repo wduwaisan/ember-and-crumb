@@ -97,6 +97,14 @@ page("index.html",
   </div>
 </div>
 
+<section class="band reveal">
+  <img src="img/home/iced.webp" alt="" loading="lazy" decoding="async">
+  <div class="band-inner">
+    <span class="eyebrow no-rule" data-i18n="h.bandEyebrow"></span>
+    <p data-i18n="h.bandLine"></p>
+  </div>
+</section>
+
 <section class="section">
   <div class="wrap">
     <div class="split reveal">
@@ -112,35 +120,9 @@ page("index.html",
           <a href="studio.html#cookie" class="btn btn-ghost" data-i18n="h.st.cta3"></a>
         </div>
       </div>
-      <div class="split-media" style="background:linear-gradient(160deg,#FBF4E2,#DED0B6);display:grid;place-items:center;padding:2rem">
-        <div style="display:flex;align-items:flex-end;gap:1.6rem" aria-hidden="true">
-          <div class="cake" style="width:150px">
-            <div class="cake-stack" style="height:150px">
-              <div class="cake-layer sponge" style="height:26px;background:#dfb7a0"></div>
-              <div class="cake-layer" style="height:15px;background:linear-gradient(#fbf3e3,#f7edd8)"></div>
-              <div class="cake-layer sponge" style="height:26px;background:#d9b09a"></div>
-              <div class="cake-layer" style="height:15px;background:linear-gradient(#c9dc9f,#b9cf8e)"></div>
-              <div class="cake-layer sponge" style="height:26px;background:#dfb7a0"></div>
-              <div class="cake-layer" style="height:15px;background:linear-gradient(#dc7b87,#cf5f6d)"></div>
-              <div class="cake-layer sponge" style="height:26px;background:#d9b09a"></div>
-              <div class="cake-exterior" style="background:#6a412614"></div>
-              <div class="cake-top" style="background:linear-gradient(#8a5d3c,#6a4126);height:10px;top:0"></div>
-            </div>
-            <div class="cake-plate"></div>
-          </div>
-          <div class="cup hot" style="width:96px;height:130px;position:relative">
-            <div class="steam"><i></i><i></i><i></i></div>
-            <div class="cup-body">
-              <div class="cup-liquid" style="height:84%">
-                <div class="layer" style="bottom:0;height:34.6%;background:#3a2010"></div>
-                <div class="layer" style="bottom:34%;height:13.6%;background:#8a5c37"></div>
-                <div class="layer" style="bottom:47%;height:53.6%;background:#e8cfa8"></div>
-              </div>
-              <div class="foam" style="bottom:83%;height:12%;background:linear-gradient(#fffaf0,#f7e9cf)"></div>
-            </div>
-            <div class="cup-lid"></div><div class="cup-sleeve"></div>
-          </div>
-        </div>
+      <div class="split-media">
+        <img src="img/home/table.webp" alt="" loading="lazy" decoding="async"
+          style="width:100%;height:100%;object-fit:cover;display:block">
       </div>
     </div>
   </div>
@@ -160,7 +142,38 @@ page("index.html",
   </div>
 </section>
 
-<section class="section-tight" id="collage">
+<section class="section-tight shot-sec">
+  <div class="wrap">
+    <div class="phone-stage reveal">
+      <div class="phone">
+        <div class="phone-screen">
+          <img class="phone-shot" src="img/home/camera.webp" alt="" loading="lazy" decoding="async">
+          <!-- the shot was taken with the camera UI showing; the rest of the
+               chrome is drawn so the screen reads as the live viewfinder -->
+          <div class="cam-top" aria-hidden="true">
+            <span class="cam-dot"></span><span class="cam-flash">⚡</span><span class="cam-live">LIVE</span>
+          </div>
+          <div class="cam-bottom" aria-hidden="true">
+            <div class="cam-modes"><span>VIDEO</span><span class="on">PHOTO</span><span>PORTRAIT</span></div>
+            <div class="cam-row">
+              <span class="cam-thumb"></span>
+              <span class="cam-shutter"></span>
+              <span class="cam-flip"></span>
+            </div>
+          </div>
+        </div>
+        <img class="phone-frame" src="img/home/phone.webp" alt="" loading="lazy" decoding="async">
+      </div>
+      <div class="phone-copy">
+        <span class="eyebrow no-rule" data-i18n="h.shotEyebrow"></span>
+        <h2 data-i18n="h.shotTitle"></h2>
+        <p data-i18n="h.shotBody"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section-tight gallery-sec" id="collage">
   <div class="wrap">
     <div class="section-head reveal">
       <div><span class="eyebrow" data-i18n="h.cgEyebrow"></span>
@@ -216,11 +229,11 @@ page("index.html",
 <section class="section-tight" style="padding-bottom:clamp(4rem,9vw,7rem)">
   <div class="wrap">
     <div class="split reverse reveal">
-      <div class="split-media hero-shot" id="heroShot" style="display:grid;place-items:center;aspect-ratio:16/11">
-        <div class="center" style="color:#F3E7D2;padding:2rem;position:relative;z-index:1">
-          <div class="eyebrow no-rule" style="color:#CE9464" data-i18n="h.openDaily"></div>
-          <p style="font-family:var(--serif);font-size:clamp(2rem,4vw,3rem);line-height:1.05;margin-top:1rem">7am<br>— 11pm</p>
-          <p style="margin-top:1.25rem;font-size:.9rem;opacity:.72;line-height:1.7" data-i18n="v.eyebrow"></p>
+      <div class="split-media hero-shot shot-caption" id="heroShot" style="aspect-ratio:4/5">
+        <div class="shot-body">
+          <div class="eyebrow no-rule" data-i18n="h.openDaily"></div>
+          <p class="shot-hours">7am<br>— 11pm</p>
+          <p class="shot-where" data-i18n="v.eyebrow"></p>
         </div>
       </div>
       <div>

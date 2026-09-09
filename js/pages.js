@@ -163,20 +163,22 @@ function monthlyHTML() {
 
 /* The mood board. Deliberately imperfect: pieces overlap, sit at slight
    angles and vary in size, the way a pinned board does. */
+/* Real photographs from the shop, committed under img/home. Five, not six:
+   the sixth candidate was a pub interior with visible alcohol branding,
+   which is wrong for a coffee shop in Kuwait. The quote takes that slot. */
 const COLLAGE = [
-  { k: 'counter', cls: 'c1', cap: 'h.cg1' },
-  { k: 'pour',    cls: 'c2', cap: 'h.cg2' },
-  { k: 'pastry',  cls: 'c3', cap: 'h.cg3' },
-  { k: 'crema',   cls: 'c4', cap: 'h.cg4' },
-  { k: 'window',  cls: 'c5', cap: 'h.cg5' },
-  { k: 'grinder', cls: 'c6', cap: 'h.cg6' },
+  { k: 'dock',    cls: 'c1', cap: 'h.cg1' },
+  { k: 'counter', cls: 'c2', cap: 'h.cg2' },
+  { k: 'car',     cls: 'c3', cap: 'h.cg3' },
+  { k: 'case',    cls: 'c4', cap: 'h.cg4' },
+  { k: 'paris',   cls: 'c5', cap: 'h.cg5' },
 ];
 
 function collageHTML() {
   return `<div class="collage">
     ${COLLAGE.map(p => `
       <figure class="cg ${p.cls}">
-        <img src="${Photos.mood(p.k, 420)}" alt="" loading="lazy" decoding="async"
+        <img src="img/home/${p.k}.webp" alt="" loading="lazy" decoding="async"
              onload="this.classList.add('in')">
         <figcaption>${t(p.cap)}</figcaption>
       </figure>`).join('')}
@@ -198,7 +200,7 @@ function initHome() {
     revealPhotos();
     const hero = $('#heroShot');
     if (hero && !hero.dataset.loaded) {
-      hero.style.backgroundImage = `url("${Photos.mood('hero', 900)}")`;
+      hero.style.backgroundImage = 'url("img/home/neon.webp")';
       hero.dataset.loaded = '1';
     }
 

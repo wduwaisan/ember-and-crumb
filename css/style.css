@@ -1010,67 +1010,166 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   background:linear-gradient(200deg,rgba(76,45,31,.78),rgba(76,45,31,.52));
 }
 
+/* The sign on this wall is the picture, so the frame shows it whole and the
+   hours become a caption strip pinned to the bottom edge rather than type
+   floating over the lettering -- two sets of words in one image read as a
+   mistake, however it is scrimmed. */
+.hero-shot.shot-caption{display:grid;align-items:end;background-position:center}
+.hero-shot.shot-caption::before{
+  background:linear-gradient(transparent 46%,rgba(26,15,9,.58) 72%,rgba(26,15,9,.93));
+}
+.shot-body{
+  position:relative;z-index:1;width:100%;
+  padding:clamp(1.1rem,2.4vw,1.6rem) clamp(1.2rem,2.6vw,1.8rem);
+  color:#F6EAD6;display:flex;align-items:flex-end;justify-content:space-between;
+  gap:1rem;flex-wrap:wrap;
+}
+.shot-body .eyebrow{color:#E7B98C;display:block}
+.shot-hours{font-family:var(--serif);font-size:clamp(1.5rem,2.6vw,2rem);line-height:1;margin-top:.45rem}
+.shot-hours br{display:none}
+.shot-where{font-size:.82rem;opacity:.8;line-height:1.5;text-align:end}
+
 /* ==========================================================================
-   Mood board
+   Full-bleed photo band
    ========================================================================== */
+/* Edge to edge, so the photograph reads as the page rather than as a card
+   sitting on it. The scrim is a gradient rather than a flat wash: the type
+   sits low, and the top of the frame stays as bright as the photo. */
+.band{position:relative;min-height:clamp(320px,48vw,560px);display:grid;place-items:end center;overflow:hidden}
+.band>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.band::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(transparent 24%,rgba(28,16,10,.30) 56%,rgba(28,16,10,.80))}
+.band-inner{position:relative;z-index:2;text-align:center;color:#FCF5E7;
+  padding:0 1.5rem clamp(2.2rem,5vw,4rem);max-width:34ch}
+.band-inner p{font-family:var(--serif);font-size:clamp(1.35rem,3.1vw,2.4rem);
+  line-height:1.24;letter-spacing:-.01em;text-wrap:balance}
+.band-inner .eyebrow{color:#E7B98C}
+
+/* ==========================================================================
+   Phone
+   ========================================================================== */
+/* The photograph was taken with the camera app open, grid and zoom pills
+   burned into the frame. Putting it back behind a bezel and drawing the rest
+   of the chrome around it -- status row, mode strip, shutter -- turns a
+   cropped screenshot into the moment the picture was taken.
+   The frame PNG has a transparent screen; the shot is positioned into that
+   hole by percentages measured off the asset's own alpha channel. */
+.phone-stage{display:grid;justify-items:center;gap:clamp(1.6rem,3.4vw,2.6rem);padding:1rem 0 .5rem}
+.phone{position:relative;width:min(392px,80vw);aspect-ratio:234/350;
+  transform:rotate(-2.6deg);transition:transform .6s var(--ease)}
+.phone:hover{transform:rotate(-.6deg) translateY(-8px)}
+.phone-screen{
+  position:absolute;left:20.94%;top:8%;width:58.55%;height:84.29%;
+  overflow:hidden;border-radius:5% / 3.4%;background:#141014;
+  box-shadow:0 26px 46px rgba(48,28,18,.36);
+}
+.phone-shot{width:100%;height:100%;object-fit:cover;display:block}
+.phone-frame{position:absolute;inset:0;width:100%;height:100%;
+  filter:drop-shadow(0 20px 30px rgba(48,28,18,.28));pointer-events:none}
+
+/* drawn camera chrome */
+.cam-top,.cam-bottom{position:absolute;left:0;right:0;color:#fff;
+  font-family:var(--sans);pointer-events:none}
+.cam-top{top:0;display:flex;align-items:center;gap:.5em;
+  padding:.5em .7em;font-size:clamp(.42rem,1.1vw,.52rem);letter-spacing:.14em;
+  background:linear-gradient(rgba(0,0,0,.55),transparent)}
+.cam-dot{width:.5em;height:.5em;border-radius:50%;background:#F5C451}
+.cam-flash{opacity:.85}
+.cam-live{margin-inline-start:auto;opacity:.7}
+.cam-bottom{bottom:0;padding:.6em .5em .8em;
+  background:linear-gradient(transparent,rgba(0,0,0,.62) 42%)}
+.cam-modes{display:flex;justify-content:center;gap:.85em;
+  font-size:clamp(.38rem,1vw,.48rem);letter-spacing:.16em;opacity:.66;margin-bottom:.6em}
+.cam-modes .on{opacity:1;color:#F5C451}
+.cam-row{display:flex;align-items:center;justify-content:space-around}
+.cam-thumb{width:1.5em;height:1.5em;border-radius:.3em;background:rgba(255,255,255,.28);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.45)}
+.cam-shutter{width:2.7em;height:2.7em;border-radius:50%;background:#fff;
+  box-shadow:0 0 0 .22em rgba(0,0,0,.35),0 0 0 .34em rgba(255,255,255,.9)}
+.cam-flip{width:1.5em;height:1.5em;border-radius:50%;background:rgba(255,255,255,.22);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.4)}
+
+/* copy sits under the phone, deliberately narrow and small against it */
+.phone-copy{max-width:52ch;text-align:center}
+.phone-copy h2{font-family:var(--serif);font-size:clamp(1.5rem,2.9vw,2.1rem);
+  line-height:1.12;margin:.7rem 0 .8rem;letter-spacing:-.01em}
+.phone-copy p{font-size:.92rem;line-height:1.72;color:var(--ink-70)}
+
+[dir="rtl"] .phone{transform:rotate(2.6deg)}
+[dir="rtl"] .phone:hover{transform:rotate(.6deg) translateY(-8px)}
+@media (prefers-reduced-motion:reduce){.phone,.phone:hover{transform:none}}
+@media (max-width:640px){
+  .phone{width:min(300px,74vw)}
+  .phone-copy p{font-size:.88rem}
+}
+
+/* ==========================================================================
+   Editorial photo grid
+   ========================================================================== */
+/* Was a scatter of tilted polaroids. Now a flush dark grid: rectangles on an
+   espresso ground, hairline gaps, captions set small and lettered underneath
+   rather than washed over the picture. Nothing rotates, so the eye reads the
+   photographs and not the frames. */
+.gallery-sec{background:#241610;color:#F4E9D8;padding:clamp(3.5rem,7vw,6rem) 0}
+.gallery-sec .eyebrow{color:#C98F5C}
+.gallery-sec .h2{color:#F7EEDF}
+.gallery-sec .section-head{border-color:rgba(244,233,216,.14)}
+
 .collage{
-  position:relative;display:grid;gap:1rem;
-  grid-template-columns:repeat(6,1fr);
-  grid-auto-rows:112px;
-  padding:1rem .5rem 2.5rem;
+  display:grid;gap:clamp(.5rem,1.1vw,.9rem);
+  grid-template-columns:repeat(12,1fr);
+  grid-auto-rows:clamp(74px,9vw,120px);
 }
 .cg{
-  position:relative;margin:0;overflow:hidden;border-radius:var(--r-sm);
-  background:var(--sand-soft);box-shadow:var(--shadow-md);
-  border:6px solid #fffdf7;                      /* a printed edge */
-  transition:transform .45s var(--ease),box-shadow .45s var(--ease);
+  position:relative;margin:0;overflow:hidden;border-radius:4px;
+  background:#160d09;
 }
-.cg img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .6s var(--ease)}
+.cg img{
+  width:100%;height:100%;object-fit:cover;display:block;opacity:0;
+  transition:opacity .7s var(--ease),transform .7s var(--ease);
+}
 .cg img.in{opacity:1}
+.cg:hover img{transform:scale(1.035)}
 .cg figcaption{
   position:absolute;left:0;right:0;bottom:0;z-index:2;
-  padding:1.4rem .7rem .5rem;color:#fffaf0;font-size:.7rem;letter-spacing:.06em;
-  background:linear-gradient(transparent,rgba(45,26,17,.72));
+  padding:1.6rem .85rem .7rem;color:#F6ECDC;
+  font-size:.62rem;letter-spacing:.17em;text-transform:uppercase;
+  background:linear-gradient(transparent,rgba(12,7,4,.78));
 }
-.cg:hover{transform:translateY(-6px) rotate(0deg) scale(1.02);box-shadow:var(--shadow-lg);z-index:5}
 
-.cg.c1{grid-column:1 / span 2; grid-row:1 / span 3; transform:rotate(-1.6deg)}
-.cg.c2{grid-column:3 / span 2; grid-row:1 / span 2; transform:rotate(1.2deg)}
-.cg.c3{grid-column:5 / span 2; grid-row:1 / span 3; transform:rotate(-.8deg)}
-.cg.c4{grid-column:3 / span 1; grid-row:3 / span 3; transform:rotate(2deg)}
-.cg.c5{grid-column:4 / span 2; grid-row:3 / span 3; transform:rotate(-1.4deg)}
-.cg.c6{grid-column:1 / span 2; grid-row:4 / span 2; transform:rotate(1.6deg)}
-.cg.c3{grid-row:1 / span 3}
+.cg.c1{grid-column:1 / span 5; grid-row:1 / span 4}
+.cg.c2{grid-column:6 / span 4; grid-row:1 / span 2}
+.cg.c3{grid-column:10 / span 3; grid-row:1 / span 4}
+.cg.c4{grid-column:6 / span 4; grid-row:3 / span 2}
+.cg.c5{grid-column:1 / span 7; grid-row:5 / span 3}
 
 .cg-quote{
-  grid-column:6 / span 1; grid-row:4 / span 2;
+  grid-column:8 / span 5; grid-row:5 / span 3;
   margin:0;display:grid;align-content:center;
-  font-family:var(--serif);font-style:italic;font-size:1rem;line-height:1.45;
-  color:var(--ink-70);padding:.5rem;
+  font-family:var(--serif);font-style:italic;
+  font-size:clamp(1.05rem,2vw,1.5rem);line-height:1.4;
+  color:rgba(246,236,220,.82);padding:.5rem clamp(.5rem,2vw,1.6rem);
 }
 [dir="rtl"] .cg{transform:none}
-[dir="rtl"] .cg.c1,[dir="rtl"] .cg.c3{transform:rotate(1.2deg)}
 
 @media (max-width:900px){
-  .collage{grid-template-columns:repeat(4,1fr);grid-auto-rows:96px}
-  .cg.c1{grid-column:1 / span 2; grid-row:1 / span 3}
-  .cg.c2{grid-column:3 / span 2; grid-row:1 / span 2}
-  .cg.c3{grid-column:3 / span 2; grid-row:3 / span 3}
-  .cg.c4{grid-column:1 / span 1; grid-row:4 / span 2}
-  .cg.c5{grid-column:2 / span 1; grid-row:4 / span 2}
-  .cg.c6{grid-column:1 / span 2; grid-row:6 / span 2}
-  .cg-quote{grid-column:3 / span 2; grid-row:6 / span 2;font-size:.92rem}
+  .collage{grid-template-columns:repeat(8,1fr);grid-auto-rows:clamp(64px,9vw,100px)}
+  .cg.c1{grid-column:1 / span 5; grid-row:1 / span 4}
+  .cg.c2{grid-column:6 / span 3; grid-row:1 / span 2}
+  .cg.c3{grid-column:6 / span 3; grid-row:3 / span 2}
+  .cg.c4{grid-column:1 / span 4; grid-row:5 / span 3}
+  .cg.c5{grid-column:5 / span 4; grid-row:5 / span 3}
+  .cg-quote{grid-column:1 / span 8; grid-row:8 / span 2;text-align:center}
 }
 @media (max-width:640px){
-  .collage{grid-template-columns:repeat(2,1fr);grid-auto-rows:84px;gap:.7rem}
-  .cg{border-width:4px}
-  .cg.c1{grid-column:1 / span 1; grid-row:1 / span 3}
-  .cg.c2{grid-column:2 / span 1; grid-row:1 / span 2}
-  .cg.c3{grid-column:2 / span 1; grid-row:3 / span 3}
-  .cg.c4{grid-column:1 / span 1; grid-row:4 / span 2}
-  .cg.c5{grid-column:1 / span 2; grid-row:6 / span 2}
-  .cg.c6{grid-column:1 / span 1; grid-row:8 / span 2}
-  .cg-quote{grid-column:2 / span 1; grid-row:8 / span 2;font-size:.85rem}
+  .collage{grid-template-columns:repeat(4,1fr);grid-auto-rows:clamp(58px,13vw,90px);gap:.45rem}
+  .cg figcaption{font-size:.56rem;padding:1.2rem .6rem .5rem}
+  .cg.c1{grid-column:1 / span 4; grid-row:1 / span 4}
+  .cg.c2{grid-column:1 / span 2; grid-row:5 / span 2}
+  .cg.c3{grid-column:3 / span 2; grid-row:5 / span 2}
+  .cg.c4{grid-column:1 / span 4; grid-row:7 / span 3}
+  .cg.c5{grid-column:1 / span 4; grid-row:10 / span 3}
+  .cg-quote{grid-column:1 / span 4; grid-row:13 / span 2;text-align:center;font-size:1.02rem}
 }
 
 /* ==========================================================================
@@ -1310,6 +1409,18 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   .float-chip i{width:22px;height:22px;font-size:.72rem}
   .hero-stats{grid-template-columns:repeat(2,auto);gap:1.1rem 1.75rem}
 }
+/* At 375px the header row -- brand, language, account, bag, menu -- measured
+   413px, so the menu toggle sat past the right edge. body{overflow-x:hidden}
+   hid the scrollbar but not the problem: the button was simply unreachable.
+   Trim the brand rather than the controls, so every target keeps its 44px. */
+@media (max-width:430px){
+  .nav{gap:.5rem}
+  .brand{font-size:1rem;gap:.45rem}
+  .brand small{display:none}
+  .brand .mark{width:26px;height:26px}
+  .nav-actions{gap:.15rem}
+}
+
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
   .reveal{opacity:1;transform:none}
