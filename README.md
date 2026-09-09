@@ -163,6 +163,15 @@ so `13.100` would read as `١٣٠١٠٠`.
 
 ## Photography
 
+The menu uses **transparent cut-out PNGs** in `img/menu/` — one per item, the
+product sitting on the cream card with no background box. Free stock has
+essentially none of these: Pixabay's transparent filter is cartoon clipart and
+photoreal cut-outs are a paid-stock genre. So they were generated locally by
+running U2Net over the licensed Unsplash originals — see
+[`tools/README.md`](./tools/README.md).
+
+### The source photographs
+
 Every photograph comes from **Unsplash**, whose licence permits free use for any
 purpose, commercial included, with no attribution required. They are hotlinked
 from the Unsplash CDN — which Unsplash supports — so the repository stays free of

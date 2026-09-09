@@ -43,19 +43,19 @@ const Photos = (() => {
     'd-blue':         '1717603545758-88cc454db69b',
     'd-matcha':       '1515823064-d6e0c04616a7',
     'd-hoji':         '1582785513054-8d1bf9d69c1a',
-    'd-qahwa':        '1544031064-9de80864ade5',
+    'd-qahwa':        '1650097364104-eef0e54af0da',
     'd-chai':         '1579265898841-79c7890d69cf',
-    'd-wafer':        '1549652127-2e5e59e86a7a',
+    'd-wafer':        '1578314675249-a6910f80cc4e',
     'd-choc':         '1592663527359-cf6642f54cff',
 
     /* --- pastry case --- */
     'p-croissant':    '1623334044303-241021148842',
     'p-pain':         '1483695028939-5bb13f8648b0',
     'p-morning':      '1530610476181-d83430b64dcd',
-    'p-kouign':       '1643944471768-2d2eac3afb6d',
+    'p-kouign':       '1652101270782-7b9187a6dafb',
     'p-pistachio':    '1567891026259-c133718572a4',
     'p-scone':        '1599125816289-736f5025fc05',
-    'p-date':         '1638202956270-8167b5c88ce6',
+    'p-date':         '1565182363525-f95648bbeee0',
 
     /* --- cookies --- */
     'k-brownbutter':  '1558961363-fa8fdf82db35',
@@ -103,6 +103,13 @@ const Photos = (() => {
     slice:    '1536749605762-e7445a2d43ec',
   };
 
+  /* Cut-outs live in the repo as real transparent PNGs. They were produced
+     by running the U2Net salient-object model over the Unsplash originals
+     locally, so the subject sits on the cream card with no background box —
+     the product-shot look, from photographs we are actually licensed to use.
+     Beans keep their drawn artwork; a bag of coffee cuts out poorly. */
+  const cutout = id => (ITEM[id] && !id.startsWith('b-')) ? `img/menu/${id}.png` : null;
+
   const has = id => !!ITEM[id];
   const forItem = (id, w) => ITEM[id] ? url(ITEM[id], w) : null;
   const mood = (key, w) => MOOD[key] ? url(MOOD[key], w) : null;
@@ -110,13 +117,19 @@ const Photos = (() => {
   /* A photo tile that fades up once decoded, over the item's own colours so
      there is never a white hole while it loads. */
   function tile(item, w, cls = '') {
+    const cut = cutout(item.id);
+    if (cut) {
+      /* No placeholder gradient behind a cut-out: it would show through the
+         transparency as a coloured rectangle, which is the thing we removed. */
+      return `<img class="photo cut ${cls}" src="${cut}" alt="${esc(L(item))}"
+        loading="lazy" decoding="async">`;
+    }
     const src = forItem(item.id, w);
     if (!src) return null;
     return `<img class="photo ${cls}" src="${src}" alt="${esc(L(item))}"
       loading="lazy" decoding="async" width="${w}" height="${Math.round(w * 0.78)}"
-      onload="this.classList.add('in')"
       style="background:linear-gradient(150deg,${lighten(item.c1,.2)},${item.c2})">`;
   }
 
-  return { url, forItem, mood, has, tile, ITEM, MOOD };
+  return { url, forItem, mood, has, tile, cutout, ITEM, MOOD };
 })();

@@ -982,6 +982,13 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
 
 .menu-swatch{overflow:hidden;position:relative}
 .menu-photo{position:absolute;inset:0}
+/* A cut-out needs no frame, no crop and no colour behind it — just the
+   product on the card with a soft contact shadow. */
+.menu-swatch.bare{background:none!important;box-shadow:none;overflow:visible;border-radius:0}
+.photo.cut{object-fit:contain;background:none!important;filter:drop-shadow(0 6px 10px rgba(76,45,31,.18))}
+.card-media .photo.cut{padding:8%}
+.card-media:has(.photo.cut){background:linear-gradient(165deg,#FFFCF4,#F1E6CF)}
+.card-media:has(.photo.cut)::after{display:none}
 
 /* A warm wash so mixed stock photography still reads as one shop. */
 .card-media::after,.hero-shot::after,.cg::after{
