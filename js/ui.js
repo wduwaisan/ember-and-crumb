@@ -622,6 +622,16 @@ function buildVeil() {
   const v = document.createElement('div');
   v.className = 'pg-veil'; v.id = 'pgVeil'; v.setAttribute('aria-hidden', 'true');
   document.body.append(v);
+  /* Failsafe. The veil is a full-screen opaque cover at z-index 150, and it
+     is normally lifted by runScreenIn(). If that never runs — a script error,
+     or the welcome screen being torn down by something other than its own
+     dismiss path — the whole site would sit invisible behind a cream
+     rectangle. Never let that outlive a few seconds. */
+  setTimeout(() => {
+    if (!document.body.contains(v)) return;
+    v.classList.add('out');
+    setTimeout(() => v.remove(), 800);
+  }, 4000);
 }
 
 /* Fade out before a same-site navigation so pages hand over instead of blinking. */
