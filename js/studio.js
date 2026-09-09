@@ -529,7 +529,7 @@ function drinkPanel() {
   <div class="opt-group" style="padding-bottom:1rem">
     <div class="opt-head"><h3 class="opt-title"><i>${I.spark}</i>${t('st.presetDrink')}</h3>
       <span class="opt-hint">${t('st.thenChange')}</span></div>
-    <div class="presets">${presetHTML(DRINK_PRESETS, 'drink')}</div>
+    <div class="presets" data-scroll-key="presets-drink">${presetHTML(DRINK_PRESETS, 'drink')}</div>
   </div>
   ${groupHTML(1, t('st.g.cup'), t('c.pickEach'), `
     <div class="opts pillrow" style="margin-bottom:.7rem">
@@ -565,7 +565,7 @@ function cakePanel() {
   <div class="opt-group" style="padding-bottom:1rem">
     <div class="opt-head"><h3 class="opt-title"><i>${I.spark}</i>${t('st.presetCake')}</h3>
       <span class="opt-hint">${t('st.thenReinvent')}</span></div>
-    <div class="presets">${presetHTML(CAKE_PRESETS, 'cake')}</div>
+    <div class="presets" data-scroll-key="presets-cake">${presetHTML(CAKE_PRESETS, 'cake')}</div>
   </div>
   ${groupHTML(1, t('st.g.size'), t('c.serves', { n: I18N.isRTL() ? fmt.ar_serves : fmt.serves }), `<div class="opts">
     ${O.format.map(o => optHTML(o, { on: cake.format === o.id, group:'format', swatch:false })).join('')}</div>`)}
@@ -612,7 +612,7 @@ function cookiePanel() {
   <div class="opt-group" style="padding-bottom:1rem">
     <div class="opt-head"><h3 class="opt-title"><i>${I.spark}</i>${t('st.presetCookie')}</h3>
       <span class="opt-hint">${t('st.thenChange')}</span></div>
-    <div class="presets">${presetHTML(COOKIE_PRESETS, 'cookie')}</div>
+    <div class="presets" data-scroll-key="presets-cookie">${presetHTML(COOKIE_PRESETS, 'cookie')}</div>
   </div>
   ${groupHTML(1, t('st.g.pack'), t('c.pickEach'), `
     <div class="opts pillrow" style="margin-bottom:.7rem">
@@ -680,10 +680,29 @@ function paintStage() {
   $('#stageLead').textContent = t(M.lead);
 }
 
+/* Rebuilding the panel with innerHTML throws away the scroll position of
+   anything inside it, so the preset rail jumped back to its first card every
+   time a box was picked. Positions are captured by key and put back around
+   the swap. Switching studios is left alone -- a different rail should start
+   at its own beginning. */
+let paintedMode = null;
+
 function paint() {
   clampCounts();
   paintStage();
-  $('#optPanel').innerHTML = MODES[mode].panel();
+  const panel = $('#optPanel');
+  const same = paintedMode === mode;
+  const keep = same ? new Map([...panel.querySelectorAll('[data-scroll-key]')]
+    .map(e => [e.dataset.scrollKey, [e.scrollLeft, e.scrollTop]])) : null;
+
+  panel.innerHTML = MODES[mode].panel();
+
+  if (keep) panel.querySelectorAll('[data-scroll-key]').forEach(e => {
+    const at = keep.get(e.dataset.scrollKey);
+    if (at) { e.scrollLeft = at[0]; e.scrollTop = at[1]; }
+  });
+  paintedMode = mode;
+
   $$('.studio-tab').forEach(x => x.classList.toggle('active', x.dataset.mode === mode));
   history.replaceState(null, '', mode === 'drink' ? location.pathname : location.pathname + '#' + mode);
 }
