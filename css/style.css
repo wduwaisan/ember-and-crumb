@@ -408,8 +408,7 @@ body::before{
 .stage-shadow{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);width:62%;height:18px;border-radius:50%;background:radial-gradient(ellipse,rgba(36,24,18,.24),transparent 70%)}
 
 .stage-name{font-family:var(--serif);font-size:1.5rem;font-weight:600;letter-spacing:-.02em;line-height:1.15;text-wrap:balance}
-.stage-recipe{font-size:.83rem;line-height:1.6;color:var(--ink-55);margin-top:.5rem;min-height:2.6em;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.stage-recipe{font-size:.83rem;line-height:1.6;color:var(--ink-55);margin-top:.5rem;min-height:2.6em}
 .stage-meta{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid var(--line)}
 .stage-price{font-family:var(--serif);font-size:1.85rem;font-weight:600;font-variant-numeric:tabular-nums;line-height:1}
 .stage-price small{font-size:.7rem;font-family:var(--sans);color:var(--ink-40);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:.25rem;font-weight:600}
@@ -494,6 +493,11 @@ body::before{
 .opt-hint.warn{color:var(--terracotta);font-weight:600}
 .opts{display:grid;gap:.55rem;grid-template-columns:repeat(auto-fill,minmax(172px,1fr))}
 .opts.wide{grid-template-columns:repeat(auto-fill,minmax(196px,1fr))}
+/* Counted groups carry a fixed-width stepper as well as a name, so they get
+   their own track size. 272px = 25.6 padding + 22 swatch + 2x10.4 gaps +
+   137 (the widest name, "Raspberry Choc Chip") + 68 stepper, measured rather
+   than guessed. Names still wrap if a column ends up narrower than that. */
+.opts.counted{grid-template-columns:repeat(auto-fill,minmax(272px,1fr))}
 .opts.pillrow{display:flex;flex-wrap:wrap;gap:.5rem;grid-template-columns:none}
 
 .opt{
@@ -507,7 +511,7 @@ body::before{
    sized for the wider of the two so the row does not resize under the cursor
    the moment you add something. */
 .opt-tail{flex-shrink:0;display:flex;justify-content:flex-end;align-items:center}
-.opt.qty .opt-tail{min-width:74px}   /* the stepper measures 70 */
+.opt.qty .opt-tail{min-width:68px}
 .opt:hover{border-color:var(--line-2);background:var(--paper-2);transform:translateY(-1px)}
 .opt.on{border-color:var(--espresso);background:var(--paper);box-shadow:0 0 0 1px var(--espresso),var(--shadow-sm)}
 .opt.on .opt-check{opacity:1;transform:scale(1)}
@@ -515,9 +519,9 @@ body::before{
 .swatch.sq{border-radius:6px}
 .opt-txt{flex:1;min-width:0}
 .opt-name{font-size:.85rem;font-weight:600;line-height:1.25;display:block}
-/* only the counted tiles need this: their stepper is fixed-width, so a long
-   name has to give. Elsewhere names still wrap onto a second line. */
-.opt.qty .opt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Counted tiles wrap rather than truncate -- an ellipsis on "Caramelised
+   Banana" tells you nothing, a second line does. */
+.opt.qty .opt-name{white-space:normal;overflow-wrap:anywhere}
 .opt-sub{font-size:.7rem;color:var(--ink-40);line-height:1.35;display:block;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .opt-price{font-size:.72rem;color:var(--ink-40);font-variant-numeric:tabular-nums;font-weight:600;flex-shrink:0;white-space:nowrap;align-self:center}
@@ -554,7 +558,7 @@ body::before{
 }
 
 /* pump stepper inside a selected syrup */
-.pumps{display:flex;align-items:center;gap:.15rem;flex-shrink:0}
+.pumps{display:flex;align-items:center;gap:.12rem;flex-shrink:0}
 .pump-btn{
   width:26px;height:26px;border-radius:50%;border:1px solid var(--line-2);
   display:grid;place-items:center;font-size:.92rem;line-height:1;color:var(--ink-55);
@@ -562,7 +566,7 @@ body::before{
 }
 .pump-btn[disabled]{opacity:.32;pointer-events:none}
 .pump-btn:hover{border-color:var(--espresso);background:var(--espresso);color:var(--paper)}
-.pump-n{font-size:.8rem;font-weight:700;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
+.pump-n{font-size:.8rem;font-weight:700;min-width:1.6ch;text-align:center;font-variant-numeric:tabular-nums}
 
 /* presets */
 .presets{display:flex;gap:.6rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:thin;margin:-.25rem;
@@ -1350,6 +1354,7 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   .btn-quiet{padding:.6em 1em}
   .qty button{width:32px;height:32px}
   .pump-btn{width:28px;height:28px;font-size:1rem}
+  .opt.qty .opt-tail{min-width:78px}
   .ink{width:38px;height:38px}
   .opt{min-height:56px}
   .opt.pill{padding:.7rem 1.15rem}

@@ -540,11 +540,11 @@ function drinkPanel() {
     ${O.base.map(o => optHTML(o, { on: drink.base === o.id, group:'base' })).join('')}</div>`)}
   ${groupHTML(3, t('st.g.milk'), t('c.pickOne'), `<div class="opts">
     ${O.milk.map(o => optHTML(o, { on: drink.milk === o.id, group:'milk' })).join('')}</div>`)}
-  ${groupHTML(4, t('st.g.syrup'), total === 1 ? t('st.pump1') : t('st.pumps', { n: I18N.digits(total) }), `<div class="opts">
+  ${groupHTML(4, t('st.g.syrup'), total === 1 ? t('st.pump1') : t('st.pumps', { n: I18N.digits(total) }), `<div class="opts counted">
     ${O.syrup.map(o => optHTML(o, { on: has(drink.syrups, o.id), group:'syrup', qty: drink.syrups[o.id] || 0 })).join('')}</div>`)}
-  ${groupHTML(5, t('st.g.extra'), t('c.addMany'), `<div class="opts">
+  ${groupHTML(5, t('st.g.extra'), t('c.addMany'), `<div class="opts counted">
     ${O.extra.map(o => optHTML(o, { on: has(drink.extras, o.id), group:'extra', qty: drink.extras[o.id] || 0 })).join('')}</div>`)}
-  ${groupHTML(6, t('st.g.finish'), t('st.dustHint'), `<div class="opts">
+  ${groupHTML(6, t('st.g.finish'), t('st.dustHint'), `<div class="opts counted">
     ${O.finish.map(o => optHTML(o, { on: has(drink.finishes, o.id), group:'finish', qty: drink.finishes[o.id] || 0 })).join('')}</div>`)}
   ${groupHTML(7, t('st.g.name'), t('c.optional'), `
     <div class="stack">
