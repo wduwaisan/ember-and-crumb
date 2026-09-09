@@ -608,7 +608,7 @@ body::before{
    ========================================================================== */
 .menu-list{display:grid;gap:0;border-top:1px solid var(--line)}
 .menu-item{
-  display:flex;gap:1.25rem;align-items:center;padding:1.15rem .4rem;
+  display:flex;gap:1.25rem;align-items:center;padding:1rem .4rem;
   border-bottom:1px solid var(--line);transition:background .2s;position:relative;
 }
 .menu-item:hover{background:var(--paper)}
@@ -1264,7 +1264,7 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
     grid-template-areas:"sw main" "right right";
     gap:.55rem .9rem;align-items:start;
   }
-  .menu-swatch{grid-area:sw;width:52px;height:52px}
+  .menu-swatch{grid-area:sw;width:76px;height:76px}
   .menu-main{grid-area:main}
   .menu-main p{max-width:none;margin-top:.35rem}
   .menu-right{grid-area:right;justify-content:flex-end;width:100%;padding-top:.15rem}

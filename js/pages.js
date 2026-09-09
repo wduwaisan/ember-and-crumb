@@ -246,7 +246,7 @@ function menuRow(item, kind) {
   const tag = L(item, 'tag');
   const whole = item.whole
     ? `<button class="btn btn-ghost btn-sm" data-add="${esc(item.id)}" data-kind="${kind}" data-whole="1">${t('c.whole', { p: money(item.whole) })}</button>` : '';
-  const shot = Photos.tile(item, 72, 'menu-photo');
+  const shot = Photos.tile(item, 110, 'menu-photo');
   return `<div class="menu-item">
     <div class="menu-swatch" style="background:linear-gradient(150deg,${lighten(item.c1,.18)},${item.c2})">${shot || ''}</div>
     <div class="menu-main">
