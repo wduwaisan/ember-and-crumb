@@ -5,14 +5,15 @@
    before: accounts, orders, recipes, reviews and cart in this browser's
    localStorage. Fill them in and it switches to Supabase automatically.
 
-   The anon key belongs in client-side code — that is what it is for. It is
-   protected by the Row Level Security policies in supabase/schema.sql.
-   NEVER put the service_role key here. It bypasses RLS entirely.
+   The key below is Supabase's PUBLISHABLE key (formerly called "anon"). It
+   belongs in client-side code — that is what it is for — and is restricted by
+   the Row Level Security policies in supabase/schema.sql.
+   NEVER put an sb_secret_... key here. Those bypass RLS entirely.
    ========================================================================== */
 const EC_CONFIG = {
   /* Supabase → Project Settings → API */
-  supabaseUrl:     '',   // e.g. 'https://abcdefghijkl.supabase.co'
-  supabaseAnonKey: '',   // the long eyJ... key labelled "anon" / "publishable"
+  supabaseUrl:     'https://ztotgsiwivdbznifbpdh.supabase.co',
+  supabaseAnonKey: 'sb_publishable_IVTr1fHwyyRiLr0RBqrTQQ_Y8LRe5Iq',
 
   /* Which sign-in methods you have actually switched on in
      Supabase → Authentication → Providers. A method left false still shows
