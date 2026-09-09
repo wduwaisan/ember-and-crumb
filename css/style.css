@@ -1097,8 +1097,13 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
    cropped screenshot into the moment the picture was taken.
    The frame PNG has a transparent screen; the shot is positioned into that
    hole by percentages measured off the asset's own alpha channel. */
-.phone-stage{display:grid;justify-items:center;gap:clamp(1.6rem,3.4vw,2.6rem);padding:1rem 0 .5rem}
-.phone{position:relative;width:min(392px,80vw);aspect-ratio:234/350;
+ /* Held to a column so the phone is not marooned in the middle of a very wide
+    row on a large monitor -- the whitespace then reads as margin, not as a gap. */
+.phone-stage{display:grid;justify-items:center;gap:clamp(1.2rem,2.6vw,2rem);padding:0;
+  max-width:min(100%,760px);margin-inline:auto}
+/* Sized off the viewport rather than pinned: at a fixed 392px the phone left
+   about 257px of dead space either side of it on a laptop. */
+.phone{position:relative;width:clamp(290px,50vw,560px);aspect-ratio:234/350;
   transform:rotate(-2.6deg);transition:transform .6s var(--ease)}
 .phone:hover{transform:rotate(-.6deg) translateY(-8px)}
 .phone-screen{
@@ -1142,7 +1147,7 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
 [dir="rtl"] .phone:hover{transform:rotate(.6deg) translateY(-8px)}
 @media (prefers-reduced-motion:reduce){.phone,.phone:hover{transform:none}}
 @media (max-width:640px){
-  .phone{width:min(300px,74vw)}
+  .phone{width:min(320px,78vw)}
   .phone-copy p{font-size:.88rem}
 }
 
