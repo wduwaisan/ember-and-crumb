@@ -499,8 +499,15 @@ body::before{
 .opt{
   display:flex;align-items:center;gap:.65rem;padding:.68rem .8rem;border-radius:var(--r-md);
   border:1px solid var(--line);background:var(--paper);text-align:left;position:relative;
+  cursor:pointer;-webkit-user-select:none;user-select:none;
   transition:border-color .18s,background .18s,transform .18s var(--ease),box-shadow .18s;
 }
+.opt:focus-visible{outline:2px solid var(--espresso);outline-offset:2px}
+/* A counted tile swaps its price for a stepper when switched on. The tail is
+   sized for the wider of the two so the row does not resize under the cursor
+   the moment you add something. */
+.opt-tail{flex-shrink:0;display:flex;justify-content:flex-end;align-items:center}
+.opt.qty .opt-tail{min-width:74px}   /* the stepper measures 70 */
 .opt:hover{border-color:var(--line-2);background:var(--paper-2);transform:translateY(-1px)}
 .opt.on{border-color:var(--espresso);background:var(--paper);box-shadow:0 0 0 1px var(--espresso),var(--shadow-sm)}
 .opt.on .opt-check{opacity:1;transform:scale(1)}
@@ -508,6 +515,9 @@ body::before{
 .swatch.sq{border-radius:6px}
 .opt-txt{flex:1;min-width:0}
 .opt-name{font-size:.85rem;font-weight:600;line-height:1.25;display:block}
+/* only the counted tiles need this: their stepper is fixed-width, so a long
+   name has to give. Elsewhere names still wrap onto a second line. */
+.opt.qty .opt-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .opt-sub{font-size:.7rem;color:var(--ink-40);line-height:1.35;display:block;margin-top:1px;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .opt-price{font-size:.72rem;color:var(--ink-40);font-variant-numeric:tabular-nums;font-weight:600;flex-shrink:0;white-space:nowrap;align-self:center}
@@ -519,11 +529,40 @@ body::before{
 .opt.pill{padding:.55rem 1rem;border-radius:var(--r-pill);justify-content:center}
 .opt.pill .opt-name{font-size:.83rem}
 
+/* ---------- add-on recap ---------- */
+.recap-empty{font-size:.88rem;color:var(--ink-40);line-height:1.6;margin:0}
+.recap-list{list-style:none;margin:0;padding:0;display:grid;gap:.15rem}
+.recap-row{
+  display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;
+  gap:.55rem .8rem;padding:.5rem .2rem;border-bottom:1px solid var(--line);
+}
+.recap-row:last-child{border-bottom:0}
+.recap-sw{width:16px;height:16px;border-radius:50%;flex-shrink:0;
+  box-shadow:inset 0 0 0 1px rgba(36,24,18,.16)}
+.recap-name{font-size:.86rem;font-weight:600;min-width:0;line-height:1.3}
+.recap-name em{
+  font-style:normal;font-weight:500;font-size:.68rem;color:var(--ink-40);
+  letter-spacing:.09em;text-transform:uppercase;margin-inline-start:.5rem;white-space:nowrap;
+}
+.recap-price{font-size:.8rem;font-weight:600;font-variant-numeric:tabular-nums;
+  color:var(--ink-70);min-width:5.4ch;text-align:end}
+@media (max-width:520px){
+  .recap-row{grid-template-columns:auto 1fr auto;gap:.4rem .6rem}
+  .recap-price{grid-column:2 / -1;text-align:start;min-width:0;
+    font-size:.74rem;color:var(--ink-40);margin-top:-.3rem}
+  .recap-name em{display:block;margin:.1rem 0 0}
+}
+
 /* pump stepper inside a selected syrup */
-.pumps{display:flex;align-items:center;gap:.3rem;flex-shrink:0}
-.pump-btn{width:21px;height:21px;border-radius:50%;border:1px solid var(--line-2);display:grid;place-items:center;font-size:.85rem;line-height:1;color:var(--ink-55);transition:.15s}
+.pumps{display:flex;align-items:center;gap:.15rem;flex-shrink:0}
+.pump-btn{
+  width:26px;height:26px;border-radius:50%;border:1px solid var(--line-2);
+  display:grid;place-items:center;font-size:.92rem;line-height:1;color:var(--ink-55);
+  background:var(--paper);transition:.15s;flex-shrink:0;
+}
+.pump-btn[disabled]{opacity:.32;pointer-events:none}
 .pump-btn:hover{border-color:var(--espresso);background:var(--espresso);color:var(--paper)}
-.pump-n{font-size:.78rem;font-weight:700;min-width:1.1ch;text-align:center;font-variant-numeric:tabular-nums}
+.pump-n{font-size:.8rem;font-weight:700;min-width:2ch;text-align:center;font-variant-numeric:tabular-nums}
 
 /* presets */
 .presets{display:flex;gap:.6rem;overflow-x:auto;padding-bottom:.5rem;scrollbar-width:thin;margin:-.25rem;

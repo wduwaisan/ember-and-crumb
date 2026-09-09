@@ -208,7 +208,11 @@ function initHome() {
     const cur = MONTHLY_RECIPES.find(r => r.current) || MONTHLY_RECIPES[0];
     const viz = $('#monthlyViz');
     if (viz && typeof renderDrink === 'function') {
-      if (cur.mode === 'drink') { Object.assign(drink, { syrups:{}, extras:[], finishes:[] }, cur.state); viz.innerHTML = renderDrink(); }
+      if (cur.mode === 'drink') {
+        Object.assign(drink, { syrups:{}, extras:{}, finishes:{} }, cur.state);
+        drink.extras = toCounts(cur.state.extras); drink.finishes = toCounts(cur.state.finishes);
+        viz.innerHTML = renderDrink();
+      }
       else if (cur.mode === 'cake') { Object.assign(cake, cur.state); viz.innerHTML = renderCake(); }
       else { Object.assign(cookie, cur.state); viz.innerHTML = renderCookie(); }
     }

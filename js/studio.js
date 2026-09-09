@@ -16,8 +16,42 @@ const rnd = (i, salt = 1) => { const x = Math.sin((i + 1) * 12.9898 * salt) * 43
    ======================================================================== */
 const drink = {
   temp:'iced', size:'16', base:'espresso', milk:'whole',
-  syrups:{}, extras:[], finishes:[], notes:'', name:'', preset:'',
+  syrups:{}, extras:{}, finishes:{}, notes:'', name:'', preset:'',
 };
+
+/* Extras and finishes used to be plain id arrays; they now carry a count, the
+   way syrups always have. Saved orders and the preset table still hold arrays,
+   so anything coming in is normalised rather than migrated. */
+const toCounts = v => Array.isArray(v)
+  ? Object.fromEntries(v.filter(Boolean).map(id => [id, 1]))
+  : { ...(v || {}) };
+const counts = m => Object.entries(m || {}).filter(([, n]) => n > 0);
+const has = (m, id) => (m || {})[id] > 0;
+
+/* How many of one add-on you may stack. Espresso is the interesting one: the
+   house base is a double, so two more is a quad and that is the ceiling. */
+function capFor(group, id) {
+  if (group === 'syrup') return 4;
+  if (group === 'extra' && id === 'shot') {
+    const baseShots = (drink.base === 'espresso' || drink.base === 'decaf') ? 2 : 0;
+    return Math.max(1, 4 - baseShots);
+  }
+  return 3;
+}
+const bagFor = g => g === 'syrup' ? drink.syrups : g === 'extra' ? drink.extras : drink.finishes;
+
+/* Caps can move under a build that already exists -- four shots on a matcha
+   base is fine, but switching that base to a double espresso would make six.
+   Re-clamp before every paint rather than trusting the buttons. */
+function clampCounts() {
+  for (const g of ['syrup', 'extra', 'finish']) {
+    const bag = bagFor(g);
+    for (const id of Object.keys(bag)) {
+      const n = Math.min(bag[id], capFor(g, id));
+      if (n > 0) bag[id] = n; else delete bag[id];
+    }
+  }
+}
 
 function drinkPrice() {
   let p = 1.200;
@@ -27,8 +61,8 @@ function drinkPrice() {
   p += find(DRINK_OPTS.milk, drink.milk)?.price || 0;
   for (const [id, pumps] of Object.entries(drink.syrups))
     p += (find(DRINK_OPTS.syrup, id)?.price || 0) * pumps;
-  drink.extras.forEach(id => p += find(DRINK_OPTS.extra, id)?.price || 0);
-  drink.finishes.forEach(id => p += find(DRINK_OPTS.finish, id)?.price || 0);
+  for (const [id, n] of counts(drink.extras))   p += (find(DRINK_OPTS.extra, id)?.price || 0) * n;
+  for (const [id, n] of counts(drink.finishes)) p += (find(DRINK_OPTS.finish, id)?.price || 0) * n;
   return p;
 }
 
@@ -70,8 +104,10 @@ function drinkRecipe() {
   if (milk.id !== 'none') bits.push(L(milk));
   Object.entries(drink.syrups).filter(([, n]) => n > 0)
     .forEach(([id, n]) => bits.push(`${I18N.digits(n)}× ${L(find(DRINK_OPTS.syrup, id))}`));
-  drink.extras.forEach(id => bits.push(L(find(DRINK_OPTS.extra, id))));
-  drink.finishes.forEach(id => bits.push(L(find(DRINK_OPTS.finish, id))));
+  for (const [id, n] of counts(drink.extras))
+    bits.push((n > 1 ? I18N.digits(n) + '\u00d7 ' : '') + L(find(DRINK_OPTS.extra, id)));
+  for (const [id, n] of counts(drink.finishes))
+    bits.push((n > 1 ? I18N.digits(n) + '\u00d7 ' : '') + L(find(DRINK_OPTS.finish, id)));
   return bits.join(' · ');
 }
 
@@ -92,7 +128,7 @@ function renderDrink() {
   const tintedBase = sc ? mix(baseOpt.color, sc, Math.min(.34, pumps * .09)) : baseOpt.color;
 
   if (!hasMilk) {
-    push(100, drink.extras.includes('tonic') ? lighten(tintedBase, .40) : tintedBase);
+    push(100, has(drink.extras, 'tonic') ? lighten(tintedBase, .40) : tintedBase);
   } else {
     const milkMixed = sc ? mix(milkOpt.color, sc, Math.min(.62, pumps * .17)) : milkOpt.color;
     const deep = darken(tintedBase, .04);
@@ -111,7 +147,7 @@ function renderDrink() {
     acc += l.h; return html;
   }).join('');
 
-  const foamExtra = drink.extras.map(id => find(DRINK_OPTS.extra, id)).find(e => e && e.foam);
+  const foamExtra = counts(drink.extras).map(([id]) => find(DRINK_OPTS.extra, id)).find(e => e && e.foam);
   const foamColor = foamExtra ? foamExtra.color : (drink.temp === 'nitro' ? '#e2cdae' : null);
   const foamH = foamExtra ? 17 : 11;
   const foamHTML = foamColor
@@ -121,7 +157,7 @@ function renderDrink() {
     ? ICE.map(([l, tp, s, r]) => `<div class="ice" style="inset-inline-start:${l}%;top:${tp + 6}%;width:${s}px;height:${s}px;--rot:${r}deg;animation-delay:${-r/6}s"></div>`).join('')
     : '';
 
-  const fins = drink.finishes.map(id => find(DRINK_OPTS.finish, id)).filter(Boolean);
+  const fins = counts(drink.finishes).map(([id]) => find(DRINK_OPTS.finish, id)).filter(Boolean);
   const drizzles = fins.filter(f => f.drizzle);
   const dusts = fins.filter(f => !f.drizzle);
   const topOffset = (foamColor ? 100 - fillPct - foamH : 100 - fillPct);
@@ -389,20 +425,37 @@ function renderCookie() {
 /* ========================================================================
    Option rendering
    ======================================================================== */
-function optHTML(o, { on, kind, group, swatch = true, pill = false, pumps = 0 }) {
+/* The tile used to be a <button> with the stepper's own buttons inside it.
+   That is invalid nesting, and the parser simply dropped them -- the stepper
+   rendered as an empty gap, which is why adding and removing felt broken.
+   The tile is a div with a button role now, so the -/+ inside are real
+   buttons, and the tail keeps a fixed width so a tile does not resize the
+   moment it is switched on. */
+function optHTML(o, { on, kind, group, swatch = true, pill = false, qty = null }) {
   const price = o.price ? `<span class="opt-price">+${money(o.price)}</span>` : '';
   const sw = swatch && o.color ? `<span class="swatch${kind==='cake'?' sq':''}" style="background:${o.color}"></span>`
     : swatch && o.color === null ? `<span class="swatch" style="background:repeating-linear-gradient(45deg,#EFE6D4,#EFE6D4 4px,#DED0B6 4px,#DED0B6 8px)"></span>` : '';
-  const stepper = pumps ? `<span class="pumps">
-      <button class="pump-btn" data-pump="-1" data-id="${o.id}" type="button" aria-label="−">−</button>
-      <span class="pump-n">${I18N.digits(pumps)}</span>
-      <button class="pump-btn" data-pump="1" data-id="${o.id}" type="button" aria-label="+">+</button>
-    </span>` : '';
-  return `<button class="opt${pill?' pill':''}${on?' on':''}" data-group="${group}" data-id="${o.id}" type="button" aria-pressed="${!!on}">
+
+  let tail = price;
+  if (qty !== null) {
+    const cap = capFor(group, o.id);
+    tail = on
+      ? `<span class="pumps">
+           <button class="pump-btn" data-pump="-1" data-group="${group}" data-id="${o.id}" type="button"
+             aria-label="${esc(t('st.less'))}">&minus;</button>
+           <span class="pump-n">${I18N.digits(qty)}</span>
+           <button class="pump-btn" data-pump="1" data-group="${group}" data-id="${o.id}" type="button"
+             aria-label="${esc(t('st.more'))}"${qty >= cap ? ' disabled' : ''}>+</button>
+         </span>`
+      : price;
+  }
+
+  return `<div class="opt${pill?' pill':''}${qty!==null?' qty':''}${on?' on':''}"
+    data-group="${group}" data-id="${o.id}" role="button" tabindex="0" aria-pressed="${!!on}">
     ${sw}<span class="opt-txt"><span class="opt-name">${esc(L(o))}</span>
     ${o.sub || o.ar_sub ? `<span class="opt-sub">${esc(L(o,'sub'))}</span>` : ''}</span>
-    ${stepper || price}
-    <span class="opt-check">${I.check}</span></button>`;
+    <span class="opt-tail">${tail}</span>
+    <span class="opt-check">${I.check}</span></div>`;
 }
 
 const groupHTML = (n, title, hint, body) => `<section class="opt-group">
@@ -430,6 +483,45 @@ function presetHTML(list, kind) {
 /* ========================================================================
    Panels
    ======================================================================== */
+/* A running list of everything added, with the same stepper as the tiles, so
+   you can adjust without hunting back up through six groups for the one you
+   want to change. */
+function addonsRecap() {
+  const rows = [];
+  const add = (group, list, kindLabel) => {
+    for (const [id, n] of counts(bagFor(group))) {
+      const o = find(list, id); if (!o) continue;
+      rows.push({ group, o, n, kindLabel, line: (o.price || 0) * n });
+    }
+  };
+  add('syrup',  DRINK_OPTS.syrup,  t('st.kindSyrup'));
+  add('extra',  DRINK_OPTS.extra,  t('st.kindExtra'));
+  add('finish', DRINK_OPTS.finish, t('st.kindFinish'));
+
+  const sum = rows.reduce((a, r) => a + r.line, 0);
+  const body = !rows.length
+    ? `<p class="recap-empty">${t('st.recapEmpty')}</p>`
+    : `<ul class="recap-list">${rows.map(r => {
+        const cap = capFor(r.group, r.o.id);
+        return `<li class="recap-row">
+          <span class="recap-sw" style="background:${r.o.color || 'var(--sand)'}"></span>
+          <span class="recap-name">${esc(L(r.o))}<em>${esc(r.kindLabel)}</em></span>
+          <span class="pumps">
+            <button class="pump-btn" data-pump="-1" data-group="${r.group}" data-id="${r.o.id}" type="button"
+              aria-label="${esc(t('st.less'))}">&minus;</button>
+            <span class="pump-n">${I18N.digits(r.n)}</span>
+            <button class="pump-btn" data-pump="1" data-group="${r.group}" data-id="${r.o.id}" type="button"
+              aria-label="${esc(t('st.more'))}"${r.n >= cap ? ' disabled' : ''}>+</button>
+          </span>
+          <span class="recap-price">${r.line ? money(r.line) : '&mdash;'}</span>
+        </li>`;
+      }).join('')}</ul>`;
+
+  return groupHTML(I.spark, t('st.g.recap'),
+    rows.length ? t('st.recapSum', { v: money(sum) }) : '',
+    `<div class="recap">${body}</div>`);
+}
+
 function drinkPanel() {
   const O = DRINK_OPTS;
   const total = Object.values(drink.syrups).reduce((a, b) => a + b, 0);
@@ -449,11 +541,11 @@ function drinkPanel() {
   ${groupHTML(3, t('st.g.milk'), t('c.pickOne'), `<div class="opts">
     ${O.milk.map(o => optHTML(o, { on: drink.milk === o.id, group:'milk' })).join('')}</div>`)}
   ${groupHTML(4, t('st.g.syrup'), total === 1 ? t('st.pump1') : t('st.pumps', { n: I18N.digits(total) }), `<div class="opts">
-    ${O.syrup.map(o => optHTML(o, { on: !!drink.syrups[o.id], group:'syrup', pumps: drink.syrups[o.id] || 0 })).join('')}</div>`)}
+    ${O.syrup.map(o => optHTML(o, { on: has(drink.syrups, o.id), group:'syrup', qty: drink.syrups[o.id] || 0 })).join('')}</div>`)}
   ${groupHTML(5, t('st.g.extra'), t('c.addMany'), `<div class="opts">
-    ${O.extra.map(o => optHTML(o, { on: drink.extras.includes(o.id), group:'extra' })).join('')}</div>`)}
+    ${O.extra.map(o => optHTML(o, { on: has(drink.extras, o.id), group:'extra', qty: drink.extras[o.id] || 0 })).join('')}</div>`)}
   ${groupHTML(6, t('st.g.finish'), t('st.dustHint'), `<div class="opts">
-    ${O.finish.map(o => optHTML(o, { on: drink.finishes.includes(o.id), group:'finish' })).join('')}</div>`)}
+    ${O.finish.map(o => optHTML(o, { on: has(drink.finishes, o.id), group:'finish', qty: drink.finishes[o.id] || 0 })).join('')}</div>`)}
   ${groupHTML(7, t('st.g.name'), t('c.optional'), `
     <div class="stack">
       <div class="field"><label for="d-name">${t('st.callIt')}</label>
@@ -462,7 +554,8 @@ function drinkPanel() {
       <div class="field"><label for="d-notes">${t('st.notesBar')}</label>
         <textarea class="textarea" id="d-notes" data-bind="drink.notes"
           placeholder="${esc(t('st.phBar'))}">${esc(drink.notes)}</textarea></div>
-    </div>`)}`;
+    </div>`)}
+  ${addonsRecap()}`;
 }
 
 function cakePanel() {
@@ -588,6 +681,7 @@ function paintStage() {
 }
 
 function paint() {
+  clampCounts();
   paintStage();
   $('#optPanel').innerHTML = MODES[mode].panel();
   $$('.studio-tab').forEach(x => x.classList.toggle('active', x.dataset.mode === mode));
@@ -610,7 +704,11 @@ function softPaint() {
 function applyPreset(kind, i) {
   const list = kind === 'drink' ? DRINK_PRESETS : kind === 'cake' ? CAKE_PRESETS : COOKIE_PRESETS;
   const p = list[i];
-  if (kind === 'drink') Object.assign(drink, { syrups:{}, extras:[], finishes:[], notes:'' }, structuredClone(p.state), { name:'', preset:L(p) });
+  if (kind === 'drink') {
+    const st = structuredClone(p.state);
+    Object.assign(drink, { syrups:{}, extras:{}, finishes:{}, notes:'' }, st, { name:'', preset:L(p) });
+    drink.extras = toCounts(st.extras); drink.finishes = toCounts(st.finishes);
+  }
   else if (kind === 'cake') Object.assign(cake, structuredClone(p.state), { name:'', preset:L(p), notes:'' });
   else Object.assign(cookie, structuredClone(p.state), { name:'', preset:L(p), notes:'' });
   paint();
@@ -625,8 +723,8 @@ function surprise() {
       temp: pick(DRINK_OPTS.temp).id, size: pick(DRINK_OPTS.size).id,
       base: pick(DRINK_OPTS.base).id, milk: pick(DRINK_OPTS.milk).id,
       syrups: Object.fromEntries(some(DRINK_OPTS.syrup, 1 + (Math.random() * 2 | 0)).map(id => [id, 1 + (Math.random() * 2 | 0)])),
-      extras: some(DRINK_OPTS.extra, Math.random() * 3 | 0),
-      finishes: some(DRINK_OPTS.finish, 1 + (Math.random() * 2 | 0)), name: '', preset: '',
+      extras: toCounts(some(DRINK_OPTS.extra, Math.random() * 3 | 0)),
+      finishes: toCounts(some(DRINK_OPTS.finish, 1 + (Math.random() * 2 | 0))), name: '', preset: '',
     });
   } else if (mode === 'cake') {
     Object.assign(cake, {
@@ -682,7 +780,10 @@ function consumeHandoff() {
     const { mode: m, state, name } = JSON.parse(raw);
     if (!MODES[m]) return false;
     mode = m;
-    if (m === 'drink') Object.assign(drink, { syrups:{}, extras:[], finishes:[], notes:'' }, state, { name: name || '' });
+    if (m === 'drink') {
+      Object.assign(drink, { syrups:{}, extras:{}, finishes:{}, notes:'' }, state, { name: name || '' });
+      drink.extras = toCounts(state.extras); drink.finishes = toCounts(state.finishes);
+    }
     else if (m === 'cake') Object.assign(cake, state, { name: name || '', notes:'' });
     else Object.assign(cookie, state, { name: name || '', notes:'' });
     setTimeout(() => toast(t('mo.loaded')), 500);
@@ -718,9 +819,10 @@ function initStudio() {
     const pump = e.target.closest('[data-pump]');
     if (pump) {
       e.stopPropagation();
-      const id = pump.dataset.id, d = +pump.dataset.pump;
-      const next = Math.max(0, Math.min(4, (drink.syrups[id] || 0) + d));
-      if (next) drink.syrups[id] = next; else delete drink.syrups[id];
+      const { id, group } = pump.dataset, d = +pump.dataset.pump;
+      const bag = bagFor(group);
+      const next = Math.max(0, Math.min(capFor(group, id), (bag[id] || 0) + d));
+      if (next) bag[id] = next; else delete bag[id];
       drink.preset = '';
       return paint();
     }
@@ -735,10 +837,10 @@ function initStudio() {
     const { group, id } = opt.dataset;
     switch (group) {
       case 'temp': case 'size': case 'base': case 'milk': drink[group] = id; break;
-      case 'syrup': if (drink.syrups[id]) delete drink.syrups[id]; else drink.syrups[id] = 2; break;
-      case 'extra': case 'finish': {
-        const key = group === 'extra' ? 'extras' : 'finishes';
-        drink[key] = drink[key].includes(id) ? drink[key].filter(x => x !== id) : [...drink[key], id];
+      case 'syrup': case 'extra': case 'finish': {
+        const bag = bagFor(group);
+        if (bag[id]) delete bag[id];
+        else bag[id] = Math.min(group === 'syrup' ? 2 : 1, capFor(group, id));
         break;
       }
       case 'format': case 'sponge': case 'soak': case 'exterior': cake[group] = id; break;
@@ -767,6 +869,13 @@ function initStudio() {
        pack:cookie, ckSize:cookie, shape:cookie, dough:cookie, icing:cookie,
        font:cookie, decor:cookie })[group].preset = '';
     paint();
+  });
+
+  /* .opt is a div with a button role, so it needs its own key handling. */
+  $('#optPanel').addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const opt = e.target.closest('.opt'); if (!opt || e.target.closest('[data-pump]')) return;
+    e.preventDefault(); opt.click();
   });
 
   $('#optPanel').addEventListener('input', e => {
