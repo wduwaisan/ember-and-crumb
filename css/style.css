@@ -288,7 +288,17 @@ body::before{
   box-shadow:inset 0 2px 40px rgba(36,24,18,.09),var(--shadow-lg);
 }
 .hero-disc::after{content:"";position:absolute;inset:7%;border:1px dashed rgba(36,24,18,.16);border-radius:50%}
-.spin-text{position:absolute;inset:-4%;animation:spin 44s linear infinite}
+/* Width and height have to be stated. With only insets, a replaced element
+   with an intrinsic ratio sizes itself from that ratio instead of the edges,
+   so the ring came out square and hung past a hero box that is not. Given
+   real dimensions it fills the box, and preserveAspectRatio keeps the circle
+   round and centred inside it. */
+.spin-text{position:absolute;inset:-4%;width:108%;height:108%;
+  animation:spin 44s linear infinite}
+/* The ring is fixed Latin whatever the page language. Left in an RTL context
+   the textPath collapses -- textLength cannot resolve a run it is trying to
+   lay out right-to-left -- so its direction is pinned and isolated. */
+.spin-text text{direction:ltr;unicode-bidi:isolate}
 /* The hero drink is a real cut-out photograph sitting on the disc. Height is
    the controlled dimension so the glass keeps its proportions at every width,
    and the drop shadow is what seats it on the disc instead of floating. */
@@ -1456,6 +1466,11 @@ body.leaving .site-header{opacity:0;transition:opacity .26s var(--ease)}
   .lang-btn{padding:0 .6rem}
   .float-chip{font-size:.72rem;padding:.45rem .75rem .45rem .5rem}
   .float-chip i{width:22px;height:22px;font-size:.72rem}
+  /* No room to sit beside the glass at this width -- a chip is wider than the
+     gap either side of it -- so they go above and below it instead. */
+  .float-chip.c1{top:2%;left:0}
+  .float-chip.c2{bottom:0;right:0}
+  .float-chip.c3{bottom:0;left:0}
   .hero-stats{grid-template-columns:repeat(2,auto);gap:1.1rem 1.75rem}
 }
 /* At 375px the header row -- brand, language, account, bag, menu -- measured

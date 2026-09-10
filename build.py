@@ -75,8 +75,11 @@ page("index.html",
       <div class="hero-disc"></div>
       <svg class="spin-text" viewBox="0 0 300 300">
         <defs><path id="circ" d="M150,150 m-118,0 a118,118 0 1,1 236,0 a118,118 0 1,1 -236,0"/></defs>
-        <text font-family="Inter,sans-serif" font-size="11.5" font-weight="600" letter-spacing="4.4" fill="rgba(76,45,31,.32)">
-          <textPath href="#circ" startOffset="0%">SMALL-BATCH ROASTERY · DAWN BAKEHOUSE · MAKE YOUR OWN · SMALL-BATCH ROASTERY · DAWN BAKEHOUSE · </textPath>
+        <!-- One pass of the phrase, fitted to the circle with textLength. The
+             string used to run twice round a 741-unit circle it needed ~1037
+             for, so its tail overlapped its own head and read as garble. -->
+        <text font-family="Inter,sans-serif" font-size="11.5" font-weight="600" fill="rgba(76,45,31,.32)">
+          <textPath href="#circ" startOffset="0%" textLength="741.4" lengthAdjust="spacing">SMALL-BATCH ROASTERY · DAWN BAKEHOUSE · MAKE YOUR OWN · </textPath>
         </text>
       </svg>
       <img class="hero-cup" src="img/hero-strawmatcha.webp" alt=""
