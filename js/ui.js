@@ -283,6 +283,16 @@ function openCart() { $('#scrim').classList.add('open'); $('#cartDrawer').classL
 function closeCart() { $('#cartDrawer').classList.remove('open'); if (!$('.modal.open')) { $('#scrim').classList.remove('open'); document.body.classList.remove('no-scroll'); } }
 function closeAll() { $('#cartDrawer')?.classList.remove('open'); $$('.modal').forEach(m => m.classList.remove('open')); $('#scrim')?.classList.remove('open'); document.body.classList.remove('no-scroll'); }
 
+/* A cart line keeps the catalogue id it came from, so the real product shot
+   can be shown instead of a colour swatch -- the thumb had never been more
+   than a gradient. Whole cakes are stored as "<id>-whole", and Studio
+   creations have no catalogue entry at all, so those keep the gradient. */
+function cartThumb(l) {
+  if (l.custom) return null;
+  const id = String(l.id || '').replace(/-whole$/, '');
+  return (typeof Photos !== 'undefined' && Photos.cutout) ? Photos.cutout(id) : null;
+}
+
 function renderCart() {
   const body = $('#cartBody'), foot = $('#cartFoot'), head = $('#cartHeading');
   if (!body) return;
@@ -300,9 +310,13 @@ function renderCart() {
     return;
   }
 
-  body.innerHTML = lines.map(l => `
+  body.innerHTML = lines.map(l => {
+    const shot = cartThumb(l);
+    return `
     <div class="cart-line">
-      <div class="cart-thumb" style="background:linear-gradient(150deg,${l.c1},${l.c2})"></div>
+      <div class="cart-thumb${shot ? ' has-shot' : ''}"${shot ? '' : ` style="background:linear-gradient(150deg,${l.c1},${l.c2})"`}>
+        ${shot ? `<img src="${shot}" alt="" loading="lazy" decoding="async">` : ''}
+      </div>
       <div class="cart-info">
         <b>${esc(l.name)}</b>
         ${l.meta ? `<small>${esc(l.meta)}</small>` : ''}
@@ -314,7 +328,8 @@ function renderCart() {
         </div>
       </div>
       <div class="cart-price">${money(l.price * l.qty)}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   const tt = Store.totals();
   foot.hidden = false;
