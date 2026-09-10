@@ -627,7 +627,13 @@ body::before{
    get a shadow instead, the same way the menu rows do. The gradient tile
    stays for Studio creations, which have no photograph to stand on. */
 .cart-thumb.bare{background:none;border:0;border-radius:0;overflow:visible}
-.cart-thumb img{width:100%;height:100%;object-fit:contain;display:block;
+/* Positioned rather than sized in percentages: the thumb is a centred grid,
+   so its row was content-sized, height:100% could not resolve against it and
+   fell back to the image's own aspect height -- a tall drink came out 75px in
+   a 56px box. overflow:hidden used to hide that; unboxing the thumb showed
+   it. Absolute insets give object-fit a definite box to work in. */
+.cart-thumb img{position:absolute;inset:0;width:100%;height:100%;
+  object-fit:contain;display:block;
   filter:drop-shadow(0 5px 8px rgba(76,45,31,.20))}
 /* A Studio build has no photograph, so its own preview stands in. Absolutely
    positioned so it can be measured at full size before being scaled down,
