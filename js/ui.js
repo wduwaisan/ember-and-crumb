@@ -287,6 +287,20 @@ function closeAll() { $('#cartDrawer')?.classList.remove('open'); $$('.modal').f
    can be shown instead of a colour swatch -- the thumb had never been more
    than a gradient. Whole cakes are stored as "<id>-whole", and Studio
    creations have no catalogue entry at all, so those keep the gradient. */
+/* The Studio preview is drawn at stage size. Scaled to whatever box it has
+   been dropped into, measured rather than assumed, because a cup, a cake and
+   a cookie are all different shapes. */
+function fitMiniArt(root) {
+  $$('.mini-art', root).forEach(el => {
+    el.style.transform = 'none';
+    const box = el.parentElement.getBoundingClientRect();
+    const art = el.getBoundingClientRect();
+    if (!art.width || !art.height || !box.width) return;
+    const k = Math.min(box.width / art.width, box.height / art.height) * 0.94;
+    el.style.transform = `scale(${k})`;
+  });
+}
+
 function cartThumb(l) {
   if (l.custom) return null;
   const id = String(l.id || '').replace(/-whole$/, '');
@@ -314,8 +328,9 @@ function renderCart() {
     const shot = cartThumb(l);
     return `
     <div class="cart-line">
-      <div class="cart-thumb${shot ? ' has-shot' : ''}"${shot ? '' : ` style="background:linear-gradient(150deg,${l.c1},${l.c2})"`}>
-        ${shot ? `<img src="${shot}" alt="" loading="lazy" decoding="async">` : ''}
+      <div class="cart-thumb${shot || l.art ? ' bare' : ''}"${shot || l.art ? '' : ` style="background:linear-gradient(150deg,${l.c1},${l.c2})"`}>
+        ${shot ? `<img src="${shot}" alt="" loading="lazy" decoding="async">`
+               : l.art ? `<div class="mini-art">${l.art}</div>` : ''}
       </div>
       <div class="cart-info">
         <b>${esc(l.name)}</b>
@@ -330,6 +345,7 @@ function renderCart() {
       <div class="cart-price">${money(l.price * l.qty)}</div>
     </div>`;
   }).join('');
+  fitMiniArt(body);
 
   const tt = Store.totals();
   foot.hidden = false;

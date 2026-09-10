@@ -786,6 +786,12 @@ function currentItem() {
     name: M.name(),
     meta: M.recipe() + (state.notes ? ` — “${state.notes}”` : ''),
     price: M.price(), c1, c2,
+    /* The preview as it looked when it was added, so the bag and the saved
+       list can show the thing that was built rather than a colour chip.
+       Captured here rather than re-rendered later: the render functions read
+       the live Studio state, and borrowing that mid-edit would disturb
+       whatever is on the bench. 1-3KB of markup. */
+    art: M.render(),
     recipe: { mode, state: structuredClone(state) },
   };
 }
@@ -830,7 +836,7 @@ function initStudio() {
     if (!Store.current()) { openAuth('signup', t('st.saveLogin')); return; }
     const item = currentItem();
     Store.saveRecipe({ name:item.name, meta:item.meta, price:item.price, kind:item.kind,
-      c1:item.c1, c2:item.c2, recipe:item.recipe });
+      c1:item.c1, c2:item.c2, art:item.art, recipe:item.recipe });
     toast(t('st.savedTo', { name: item.name }), I.heart);
   };
 

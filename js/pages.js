@@ -512,7 +512,8 @@ function paneRecipes() {
     <p style="margin-bottom:1.25rem">${t('ac.noRecipes')}</p>
     <a href="studio.html" class="btn btn-primary btn-sm">${t('ac.openStudio')}</a></div>`;
   return `<div class="grid g2">${saved.map(r => `<article class="card">
-    <div class="card-media" style="aspect-ratio:16/8;background:linear-gradient(150deg,${r.c1},${r.c2})"></div>
+    <div class="card-media rec-media" style="aspect-ratio:16/8;background:linear-gradient(150deg,${r.c1},${r.c2})">
+      ${r.art ? `<div class="mini-art">${r.art}</div>` : ''}</div>
     <div class="card-body">
       <span class="tag ${r.kind === 'cake' ? 'tag-plum' : r.kind === 'cookie' ? 'tag-gold' : 'tag-ember'}">${t('ac.' + (r.kind || 'drink'))}</span>
       <h3 class="card-title">${esc(r.name)}</h3>
@@ -561,6 +562,7 @@ function initAccount() {
   const drawPane = () => {
     const u = Store.current(); if (!u) return;
     $('#acctPane').innerHTML = pane === 'orders' ? paneOrders() : pane === 'recipes' ? paneRecipes() : paneDetails(u);
+    if (typeof fitMiniArt === 'function') fitMiniArt($('#acctPane'));
     $$('.acct-nav button').forEach(b => b.classList.toggle('active', b.dataset.pane === pane));
     history.replaceState(null, '', '#' + pane);
 

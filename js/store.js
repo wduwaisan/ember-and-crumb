@@ -236,7 +236,7 @@ const Store = (() => {
       key, id: item.id, name: item.name, price: +item.price, qty: item.qty || 1,
       meta: item.meta || '', custom: !!item.custom,
       c1: item.c1 || '#c8ae8b', c2: item.c2 || '#6b4326',
-      recipe: item.recipe || null, kind: item.kind || 'item',
+      recipe: item.recipe || null, kind: item.kind || 'item', art: item.art || null,
     });
     saveCart(c);
     return c;
